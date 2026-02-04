@@ -1,1 +1,10 @@
-[]
+[
+  {
+    "id": "B2jGRi4879sQ",
+    "slug": "sagemaker-studio-soci-indexing-faster-startup",
+    "title": "Amazon SageMaker StudioがSOCIインデックス作成をサポート、コンテナ起動時間を30〜50%短縮",
+    "date": "2026-01-22",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  }
+]
