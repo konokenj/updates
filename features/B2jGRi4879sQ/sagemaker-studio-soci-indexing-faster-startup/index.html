@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon SageMaker StudioがSOCIインデックス作成をサポート、コンテナ起動時間を30〜50%短縮</title>
+<meta name="description" content="Amazon SageMaker StudioがSOCIインデックス作成をサポート、コンテナ起動時間を30〜50%短縮 - AWS What's New">
+<meta property="og:title" content="Amazon SageMaker StudioがSOCIインデックス作成をサポート、コンテナ起動時間を30〜50%短縮">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/B2jGRi4879sQ/sagemaker-studio-soci-indexing-faster-startup/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/B2jGRi4879sQ/sagemaker-studio-soci-indexing-faster-startup/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:#f6f8fa}.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}.hljs-built_in,.hljs-symbol{color:#e36209}.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}.hljs-subst{color:#24292e}.hljs-section{color:#005cc5;font-weight:700}.hljs-bullet{color:#735c0f}.hljs-emphasis{color:#24292e;font-style:italic}.hljs-strong{color:#24292e;font-weight:700}.hljs-addition{color:#22863a;background-color:#f0fff4}.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+</style>
+</head>
+<body>
+<article>
+<h1>Amazon SageMaker StudioがSOCIインデックス作成をサポート、コンテナ起動時間を30〜50%短縮</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What's New</span>
+<span> · 2026/1/22</span>
+</div>
+<h1>Amazon SageMaker Studio が SOCI インデックス作成をサポートし、コンテナ起動時間を高速化</h1>
+<h2>新機能の背景</h2>
+<h3>カスタムコンテナイメージの起動時間がボトルネックに</h3>
+<p>Amazon SageMaker Studio は、機械学習（ML）の開発を行うためのフルマネージド型のブラウザベース統合開発環境です。TensorFlow、PyTorch、Scikit-learn などの人気の ML フレームワーク用のあらかじめ構築されたコンテナイメージが提供されており、迅速に環境をセットアップできます。</p>
+<p>しかし、データサイエンティストが特定のユースケースのために追加のライブラリ、依存関係、設定などを含むカスタム環境が必要な場合、カスタムコンテナイメージを構築して登録することができます。ML ワークロードがより複雑になるにつれ、これらのカスタムコンテナイメージのサイズが大きくなり、起動に数分かかるようになっていました。</p>
+<h3>従来の課題</h3>
+<ul>
+<li><strong>長い起動時間</strong>: 2〜5GB の典型的な ML イメージの場合、起動時間が 3〜5 分かかる</li>
+<li><strong>完全ダウンロードの必要性</strong>: コンテナの起動前に、イメージ全体をダウンロードする必要がある</li>
+<li><strong>開発効率の低下</strong>: 反復的な ML 開発において、迅速な実験と高速なプロトタイピングが妨げられる</li>
+<li><strong>実際の使用率</strong>: 研究によれば、イメージダウンロードはコンテナ起動時間の 76% を占めるが、実際にコンテナの起動に必要なデータは平均でわずか 6.4% に過ぎない</li>
+</ul>
+<p>これらの起動レイテンシーは、環境を頻繁に切り替えたり、異なるフレームワークを使用したりする場合に特に顕著なボトルネックとなり、開発者の生産性を大きく低下させていました。</p>
+<h2>新機能の概要</h2>
+<h3>SOCI インデックス作成による遅延ローディング</h3>
+<p>今回、Amazon SageMaker Studio に SOCI（Seekable Open Container Initiative）インデックス作成のサポートが追加されました。この機能により、カスタムイメージ使用時のコンテナ起動時間が <strong>30〜50%（場合によっては最大 70%）短縮</strong>されます。</p>
+<h3>SOCI の仕組み</h3>
+<p>SOCI は、コンテナイメージの遅延ローディング（lazy loading）を可能にする技術です：</p>
+<ol>
+<li><strong>インデックスの作成</strong>: コンテナイメージの内部ファイル構造をマッピングする特殊なメタデータインデックスを作成</li>
+<li><strong>選択的ダウンロード</strong>: イメージ全体ではなく、アプリケーションの起動に必要な最小限のコンポーネント（通常は全体の 5〜10%）のみをダウンロード</li>
+<li><strong>オンデマンドロード</strong>: 追加のファイルは必要に応じてバックグラウンドで並行してダウンロード</li>
+<li><strong>即座の起動</strong>: ユーザーは数秒で作業を開始でき、環境は透過的にバックグラウンドで初期化を完了</li>
+</ol>
+<h3>主要なメリット</h3>
+<ul>
+<li><strong>高速化</strong>: 起動時間を 30〜70% 短縮（イメージサイズとインスタンスタイプによる）</li>
+<li><strong>イメージ保全</strong>: 元のコンテナイメージを変更せず、イメージダイジェストと署名の有効性を維持</li>
+<li><strong>ユニバーサル最適化</strong>: SageMaker Studio のすべてのカスタム BYOI（Bring Your Own Image）コンテナに適用可能</li>
+<li><strong>OCI 準拠</strong>: SOCI インデックスは OCI 準拠のアーティファクトとして Amazon ECR に保存</li>
+</ul>
+<h3>アーキテクチャコンポーネント</h3>
+<ul>
+<li><strong>元のコンテナイメージ</strong>: Amazon ECR に保存されたベースコンテナ</li>
+<li><strong>SOCI インデックスアーティファクト</strong>: イメージのファイル構造をマッピングするメタデータ</li>
+<li><strong>OCI Image Index マニフェスト</strong>: 元のイメージと SOCI インデックスをリンクする OCI 準拠マニフェスト</li>
+<li><strong>Finch コンテナランタイム</strong>: Studio との遅延ローディング統合を実現</li>
+</ul>
+<h2>使い方</h2>
+<h3>前提条件</h3>
+<ul>
+<li>SageMaker と ECR リソースを管理する権限を持つ IAM ロールを持つ AWS アカウント</li>
+<li>SageMaker ドメイン（初めての場合は作成が必要）</li>
+<li>コンテナイメージと SOCI インデックスを保存するためのプライベート Amazon ECR リポジトリ</li>
+<li>AWS CLI バージョン 2.0 以上</li>
+</ul>
+<h3>SOCI インデックスの作成方法</h3>
+<p>SOCI インデックスは、以下のツールを使用して作成できます：</p>
+<h4>オプション 1: nerdctl と SOCI CLI の使用</h4>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># 変数の設定</span>
+ACCOUNT_ID=<span class="hljs-string">"111122223333"</span>
+REGION=<span class="hljs-string">"us-east-1"</span>
+REPOSITORY_NAME=<span class="hljs-string">"repository-name"</span>
+ORIGINAL_IMAGE_TAG=<span class="hljs-string">"original-image-tag"</span>
+SOCI_IMAGE_TAG=<span class="hljs-string">"soci-indexed-image-tag"</span>
+
+<span class="hljs-comment"># 必要なツールのインストール</span>
+<span class="hljs-built_in">sudo</span> yum install soci-snapshotter
+<span class="hljs-built_in">sudo</span> yum install containerd jq
+<span class="hljs-built_in">sudo</span> systemctl start soci-snapshotter
+<span class="hljs-built_in">sudo</span> systemctl restart containerd
+<span class="hljs-built_in">sudo</span> yum install nerdctl
+
+<span class="hljs-comment"># レジストリ変数の設定</span>
+REGISTRY_USER=AWS
+REGISTRY=<span class="hljs-string">"<span class="hljs-variable">$ACCOUNT_ID</span>.dkr.ecr.<span class="hljs-variable">$REGION</span>.amazonaws.com"</span>
+
+<span class="hljs-comment"># Amazon ECR への認証</span>
+<span class="hljs-built_in">export</span> AWS_REGION=<span class="hljs-variable">$REGION</span>
+REGISTRY_PASSWORD=$(aws ecr get-login-password --region <span class="hljs-variable">$AWS_REGION</span>)
+<span class="hljs-built_in">echo</span> <span class="hljs-variable">$REGISTRY_PASSWORD</span> | <span class="hljs-built_in">sudo</span> nerdctl login -u <span class="hljs-variable">$REGISTRY_USER</span> --password-stdin <span class="hljs-variable">$REGISTRY</span>
+
+<span class="hljs-comment"># 元のコンテナイメージのプル</span>
+<span class="hljs-built_in">sudo</span> nerdctl pull <span class="hljs-variable">$REGISTRY</span>/<span class="hljs-variable">$REPOSITORY_NAME</span>:<span class="hljs-variable">$ORIGINAL_IMAGE_TAG</span>
+
+<span class="hljs-comment"># SOCI インデックスの作成</span>
+<span class="hljs-built_in">sudo</span> nerdctl image convert --soci <span class="hljs-variable">$REGISTRY</span>/<span class="hljs-variable">$REPOSITORY_NAME</span>:<span class="hljs-variable">$ORIGINAL_IMAGE_TAG</span> <span class="hljs-variable">$REGISTRY</span>/<span class="hljs-variable">$REPOSITORY_NAME</span>:<span class="hljs-variable">$SOCI_IMAGE_TAG</span>
+
+<span class="hljs-comment"># SOCI インデックス付きイメージのプッシュ</span>
+<span class="hljs-built_in">sudo</span> nerdctl push --platform linux/amd64 <span class="hljs-variable">$REGISTRY</span>/<span class="hljs-variable">$REPOSITORY_NAME</span>:<span class="hljs-variable">$SOCI_IMAGE_TAG</span>
+</code></pre><h4>オプション 2: Finch CLI の使用</h4>
+<p>Finch CLI は、AWS が開発した Docker 互換のコマンドラインツールで、SOCI のネイティブサポートが組み込まれています。Docker のようなインターフェースで、追加のツールなしで SOCI インデックス付きイメージを簡単に作成できます。</p>
+<h4>オプション 3: Docker + SOCI CLI の使用</h4>
+<p>既存の Docker ワークフローを活用しながら、専用の SOCI コマンドラインインターフェースを通じて SOCI インデックス作成機能を追加できます。</p>
+<h3>SageMaker Studio での使用</h3>
+<p>SOCI インデックス付きイメージを作成後、SageMaker Studio で使用するには：</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># SOCI v2 イメージインデックス URI の使用</span>
+IMAGE_INDEX_URI=<span class="hljs-string">"123456789012.dkr.ecr.us-west-2.amazonaws.com/my-sagemaker-image:soci-image"</span>
+
+<span class="hljs-comment"># SageMaker Image の作成</span>
+aws sagemaker create-image \
+  --image-name <span class="hljs-string">"my-sagemaker-image"</span> \
+  --role-arn <span class="hljs-string">"arn:aws:iam::123456789012:role/SageMakerExecutionRole"</span>
+
+<span class="hljs-comment"># SOCI インデックスを使用した SageMaker Image Version の作成</span>
+aws sagemaker create-image-version \
+  --image-name <span class="hljs-string">"my-sagemaker-image"</span> \
+  --base-image <span class="hljs-string">"<span class="hljs-variable">$IMAGE_INDEX_URI</span>"</span>
+
+<span class="hljs-comment"># JupyterLab 用 App Image Config の作成</span>
+aws sagemaker create-app-image-config \
+  --app-image-config-name <span class="hljs-string">"my-sagemaker-image-config"</span> \
+  --jupyter-lab-app-image-config <span class="hljs-string">'{
+    "FileSystemConfig": {
+      "MountPath": "/home/sagemaker-user",
+      "DefaultUid": 1000,
+      "DefaultGid": 100
+    }
+  }'</span>
+
+<span class="hljs-comment"># ドメインの更新（カスタムイメージを含める）</span>
+aws sagemaker update-domain \
+  --domain-id <span class="hljs-string">"d-xxxxxxxxxxxx"</span> \
+  --default-user-settings <span class="hljs-string">'{
+    "JupyterLabAppSettings": {
+      "CustomImages": [{
+        "ImageName": "my-sagemaker-image",
+        "AppImageConfigName": "my-sagemaker-image-config"
+      }]
+    }
+  }'</span>
+</code></pre><h3>対応環境</h3>
+<p>SOCI インデックス作成は、SageMaker Unified Studio と SageMaker AI の両方で、すべての ML 環境（JupyterLab、CodeEditor など）に対応しています。</p>
+<h2>注意点</h2>
+<h3>パフォーマンスの変動</h3>
+<ul>
+<li><strong>起動時間の短縮率は可変</strong>: イメージサイズ、インスタンスタイプ、アプリケーションの依存関係によって 30〜70% の範囲で変動します</li>
+<li><strong>インスタンスの可用性</strong>: ML インスタンスの可用性によって、各アプリの起動レイテンシーとその改善度が異なる場合があります</li>
+</ul>
+<h3>イメージインデックス URI の使用</h3>
+<ul>
+<li>SageMaker Studio で SOCI インデックス付きイメージを使用するには、<strong>元のコンテナイメージ URI ではなく、イメージインデックス URI を参照する必要があります</strong></li>
+<li>イメージインデックス URI は、SOCI 変換プロセス中に指定したタグに対応します</li>
+</ul>
+<h3>SOCI インデックスの作成プロセス</h3>
+<ul>
+<li>SOCI インデックスの作成には、元のイメージに対して追加の処理ステップが必要です</li>
+<li>CI/CD パイプラインにこのステップを組み込む必要があります</li>
+</ul>
+<h3>ストレージの考慮事項</h3>
+<ul>
+<li>ECR リポジトリには、元のイメージに加えて SOCI インデックスアーティファクトが保存されます</li>
+<li>SOCI インデックスは通常 10〜20MB 程度の小さなサイズです</li>
+</ul>
+<h3>利用可能なリージョン</h3>
+<ul>
+<li>SOCI インデックス作成は、Amazon SageMaker Studio が利用可能なすべての AWS リージョンで使用できます</li>
+</ul>
+<h3>ビルド時変換とイメージ署名</h3>
+<ul>
+<li>SOCI Index Manifest v1 は、イメージ変換ステップを必要としませんが、本番環境では複数の次元でパフォーマンスが変化する可能性があります</li>
+<li>SOCI Index Manifest v2 は、ビルド時変換ステップを使用し、これらの欠点に対処しています</li>
+<li>元の OCI イメージに対して作成された署名は、SOCI インデックスの追加後も有効なままです</li>
+</ul>
+<h3>ワークロード固有の最適化</h3>
+<p>現在の実装では、特定のワークロードに基づいたロード順序の最適化は含まれていません。将来のアップデートで追加される可能性があります。</p>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2025/12/amazon-sagemaker-nbi-soci/">Amazon SageMaker Studio now supports SOCI indexing for faster container startup times - AWS What's New</a></li>
+<li><a href="https://docs.aws.amazon.com/sagemaker/latest/dg/soci-indexing.html">Speed up container startup with SOCI - Amazon SageMaker AI Developer Guide</a></li>
+<li><a href="https://docs.aws.amazon.com/sagemaker-unified-studio/latest/userguide/byoi-soci-indexing.html">Speed up container startup with SOCI - Amazon SageMaker Unified Studio</a></li>
+<li><a href="https://docs.aws.amazon.com/sagemaker-unified-studio/latest/userguide/byoi.html">Bring your own image (BYOI) - Amazon SageMaker Unified Studio</a></li>
+<li><a href="https://aws.amazon.com/blogs/machine-learning/introducing-soci-indexing-for-amazon-sagemaker-studio-faster-container-startup-times-for-ai-ml-workloads/">Introducing SOCI indexing for Amazon SageMaker Studio: Faster container startup times for AI/ML workloads - AWS Machine Learning Blog</a></li>
+<li><a href="https://docs.aws.amazon.com/sagemaker/latest/dg/soci-indexing-example-create-indexes.html">Create SOCI indexes with nerdctl and SOCI CLI example - Amazon SageMaker AI</a></li>
+<li><a href="https://github.com/awslabs/soci-snapshotter">SOCI Snapshotter - GitHub</a></li>
+</ul>
+
+</article>
+<footer>
+<p>Generated by <a href="https://github.com/konoken/update-unpacker">Update Unpacker</a></p>
+</footer>
+</body>
+</html>
