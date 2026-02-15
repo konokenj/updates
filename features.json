@@ -1,5 +1,13 @@
 [
   {
+    "id": "LefQlvM26DKF",
+    "slug": "rds-aurora-snapshot-restore-backup-configuration",
+    "title": "Amazon RDSでスナップショット復元時にバックアップ設定を指定可能に",
+    "date": "2026-02-13",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "B2jGRi4879sQ",
     "slug": "sagemaker-studio-soci-indexing-faster-startup",
     "title": "Amazon SageMaker StudioがSOCIインデックス作成をサポート、コンテナ起動時間を30〜50%短縮",
