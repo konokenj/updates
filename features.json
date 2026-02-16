@@ -14,5 +14,13 @@
     "date": "2026-01-22",
     "type": "FEAT",
     "sourceName": "AWS What's New"
+  },
+  {
+    "id": "cvs15OW4ONbK",
+    "slug": "aws-cdk-cli-init-custom-project-name",
+    "title": "AWS CDK CLIのcdk initでカスタムプロジェクト名を指定可能に",
+    "date": "2026-01-15",
+    "type": "FEAT",
+    "sourceName": "AWS CDK CLI"
   }
 ]

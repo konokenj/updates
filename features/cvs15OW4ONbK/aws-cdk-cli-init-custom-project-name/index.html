@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AWS CDK CLIのcdk initでカスタムプロジェクト名を指定可能に</title>
+<meta name="description" content="AWS CDK CLI v2.1101.0で、cdk initコマンドに--project-name（-n）オプションを追加。ディレクトリ名とは独立してプロジェクト名を指定可能に。スタッククラス名やプロジェクト内の命名に反映され、既存ディレクトリ構造での初期化が柔軟に。">
+<meta property="og:title" content="AWS CDK CLIのcdk initでカスタムプロジェクト名を指定可能に">
+<meta property="og:description" content="AWS CDK CLI v2.1101.0で、cdk initコマンドに--project-name（-n）オプションを追加。ディレクトリ名とは独立してプロジェクト名を指定可能に。スタッククラス名やプロジェクト内の命名に反映され、既存ディレクトリ構造での初期化が柔軟に。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/cvs15OW4ONbK/aws-cdk-cli-init-custom-project-name/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/cvs15OW4ONbK/aws-cdk-cli-init-custom-project-name/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>AWS CDK CLIのcdk initでカスタムプロジェクト名を指定可能に</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS CDK CLI</span>
+<span> · 2026/1/15</span>
+</div>
+<div class="summary"><strong>要約:</strong> AWS CDK CLI v2.1101.0で、cdk initコマンドに--project-name（-n）オプションを追加。ディレクトリ名とは独立してプロジェクト名を指定可能に。スタッククラス名やプロジェクト内の命名に反映され、既存ディレクトリ構造での初期化が柔軟に。</div>
+<h2>新機能の背景</h2>
+<p>これまで <code>cdk init</code> コマンドで新しいCDKプロジェクトを作成する際、プロジェクト名はディレクトリ名から自動的に決定されていました。例えば、<code>my-app</code> というディレクトリで <code>cdk init</code> を実行すると、スタッククラス名やその他のプロジェクトコードは自動的に <code>MyApp</code> として生成されていました。</p>
+<p>このため、ディレクトリ名とプロジェクト内のコード名を別にしたい場合や、既存のディレクトリ構造内でCDKプロジェクトを初期化する際に、明示的にプロジェクト名を指定できないという不便さがありました。この機能追加は、GitHub Issue <a href="https://github.com/aws/aws-cdk-cli/issues/990">#990</a> で要望されていたものです。</p>
+<h2>新機能の概要</h2>
+<p>AWS CDK CLI バージョン 2.1101.0 から、<code>cdk init</code> コマンドに新しいオプション <code>--project-name</code>（エイリアス <code>-n</code>）が追加されました。これにより、プロジェクトの初期化時に、ディレクトリ名とは独立してプロジェクト名を明示的に指定できるようになりました。</p>
+<p><strong>主な変更点:</strong></p>
+<ul>
+<li><code>--project-name</code> または <code>-n</code> オプションを使用してカスタムプロジェクト名を指定可能</li>
+<li>指定されたプロジェクト名は、スタッククラス名やその他のプロジェクト内の命名に反映されます</li>
+<li>このオプションを指定しない場合は、従来通りディレクトリ名がプロジェクト名として使用されます</li>
+</ul>
+<h2>使い方</h2>
+<h3>基本的な使用方法</h3>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># --project-name オプションを使用</span>
+cdk init app --language typescript --project-name my-custom-project
+
+<span class="hljs-comment"># 短縮形 -n を使用</span>
+cdk init app --language python -n my-custom-project
+</code></pre><h3>具体的な使用例</h3>
+<p><strong>TypeScript の場合:</strong></p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># &quot;infrastructure&quot; ディレクトリでプロジェクトを初期化するが、</span>
+<span class="hljs-comment"># プロジェクト名は &quot;ecommerce-backend&quot; にする</span>
+<span class="hljs-built_in">mkdir</span> infrastructure
+<span class="hljs-built_in">cd</span> infrastructure
+cdk init app --language typescript --project-name ecommerce-backend
+</code></pre><p>この場合、生成されるスタックファイルは <code>lib/ecommerce-backend-stack.ts</code> となり、クラス名は <code>EcommerceBackendStack</code> になります。</p>
+<p><strong>Python の場合:</strong></p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># &quot;cdk&quot; ディレクトリでプロジェクトを初期化するが、</span>
+<span class="hljs-comment"># プロジェクト名は &quot;data-pipeline&quot; にする</span>
+<span class="hljs-built_in">mkdir</span> cdk
+<span class="hljs-built_in">cd</span> cdk
+cdk init app --language python -n data-pipeline
+</code></pre><h3>テストでの確認</h3>
+<p>実装されたテストケースによると、以下のような動作が確認されています:</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// プロジェクト名を &quot;my-project&quot; に指定した場合</span>
+cdk init app --language typescript --project-name my-project
+
+<span class="hljs-comment">// 生成されるスタックファイル: lib/my-project-stack.ts</span>
+<span class="hljs-comment">// スタッククラス名: MyProjectStack</span>
+</code></pre><h2>注意点</h2>
+<h3>オプション指定なしの場合は従来通り</h3>
+<p><code>--project-name</code> オプションを指定しない場合、従来通りディレクトリ名からプロジェクト名が決定されます。既存の動作に影響はありません。</p>
+<h3>命名規則</h3>
+<p>指定したプロジェクト名は decamelize 処理されます（コードの実装より）:</p>
+<ul>
+<li>入力: <code>myProject</code> → 出力: <code>my-project</code></li>
+<li>入力: <code>MyCustomApp</code> → 出力: <code>my-custom-app</code></li>
+</ul>
+<p>そのため、最初からケバブケース（ハイフン区切り）で指定することを推奨します。</p>
+<h3>対応言語</h3>
+<p>この機能は CDK がサポートするすべての言語テンプレートで使用できます:</p>
+<ul>
+<li>TypeScript</li>
+<li>JavaScript</li>
+<li>Python</li>
+<li>Java</li>
+<li>C#</li>
+<li>F#</li>
+<li>Go</li>
+</ul>
+<h3>バージョン要件</h3>
+<p>この機能は AWS CDK CLI バージョン <strong>2.1101.0</strong> 以降で利用可能です。使用する前に CDK CLI を最新バージョンにアップデートしてください:</p>
+<pre><code class="hljs language-bash">npm install -g aws-cdk@latest
+</code></pre><h3>他のオプションとの互換性</h3>
+<p><code>--project-name</code> は他の <code>cdk init</code> オプションと組み合わせて使用できます:</p>
+<ul>
+<li><code>--language, -l</code>: プログラミング言語の指定</li>
+<li><code>--generate-only</code>: Git リポジトリや依存関係のインストールをスキップ</li>
+<li><code>--from-path</code>: カスタムテンプレートの使用</li>
+<li><code>--template-path</code>: マルチテンプレートリポジトリ内の特定のテンプレート</li>
+<li><code>--package-manager</code>: TypeScript/JavaScript プロジェクトのパッケージマネージャー指定</li>
+</ul>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://github.com/aws/aws-cdk-cli/releases/tag/aws-cdk%40v2.1101.0">AWS CDK CLI リリースノート v2.1101.0</a></li>
+<li><a href="https://github.com/aws/aws-cdk-cli/pull/1006">Pull Request #1006</a></li>
+<li><a href="https://github.com/aws/aws-cdk-cli/issues/990">Issue #990</a></li>
+<li><a href="https://docs.aws.amazon.com/cdk/v2/guide/ref-cli-cmd-init.html">AWS CDK ドキュメント: cdk init コマンド</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://github.com/aws/aws-cdk-cli/pull/1006" target="_blank" rel="noopener">元のページを開く</a></li><li>アップデート: <a href="https://github.com/aws/aws-cdk-cli/releases/tag/aws-cdk%40v2.1101.0" target="_blank" rel="noopener">aws-cdk@v2.1101.0</a></li><li>参照したコンテンツ: 2件</li></ul></div>
+</article>
+<footer>
+<p>Generated by <a href="https://github.com/konoken/update-unpacker">Update Unpacker</a> · 2026/1/15</p>
+</footer>
+</body>
+</html>
