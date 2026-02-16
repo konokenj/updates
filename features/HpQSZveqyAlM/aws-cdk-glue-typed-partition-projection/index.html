@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AWS CDK Glueに型安全なパーティション射影設定機能を追加</title>
+<meta name="description" content="CDK GlueでパーティションプロジェクションをTypeScript型安全に設定可能に。INTEGER、DATE、ENUM、INJECTEDの4タイプに対応し、コンパイル時のバリデーションで設定ミスを防止。Athenaクエリのパフォーマンス最適化がより安全に実装可能。">
+<meta property="og:title" content="AWS CDK Glueに型安全なパーティション射影設定機能を追加">
+<meta property="og:description" content="CDK GlueでパーティションプロジェクションをTypeScript型安全に設定可能に。INTEGER、DATE、ENUM、INJECTEDの4タイプに対応し、コンパイル時のバリデーションで設定ミスを防止。Athenaクエリのパフォーマンス最適化がより安全に実装可能。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/HpQSZveqyAlM/aws-cdk-glue-typed-partition-projection/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/HpQSZveqyAlM/aws-cdk-glue-typed-partition-projection/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>AWS CDK Glueに型安全なパーティション射影設定機能を追加</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS CDK</span>
+<span> · 2026/2/9</span>
+</div>
+<div class="summary"><strong>要約:</strong> CDK GlueでパーティションプロジェクションをTypeScript型安全に設定可能に。INTEGER、DATE、ENUM、INJECTEDの4タイプに対応し、コンパイル時のバリデーションで設定ミスを防止。Athenaクエリのパフォーマンス最適化がより安全に実装可能。</div>
+<h2>新機能の背景</h2>
+<p>AWS Glue のパーティション射影（Partition Projection）は、Amazon Athena でのクエリ処理を高速化する重要な機能です。パーティション射影を使用すると、Athena はメタデータルックアップを行わずに、テーブルプロパティから直接パーティション値を計算できるため、特に大量のパーティションを持つテーブルで大幅なパフォーマンス向上が期待できます。</p>
+<p>しかし、CDK でのパーティション射影の設定は文字列ベースで行われており、以下の問題がありました：</p>
+<ul>
+<li><strong>型チェックの欠如</strong>: 文字列ベースの設定では、TypeScript の型システムによる検証が行われないため、タイプミスや不正な値を実行時まで検出できませんでした</li>
+<li><strong>プロパティの必須性が不明確</strong>: パーティション射影のタイプ（INTEGER、DATE、ENUMなど）によって必須プロパティが異なりますが、型定義で強制されていませんでした</li>
+<li><strong>実行時エラーのリスク</strong>: 設定ミスがデプロイ後に初めて発覚し、クエリ実行時のエラーにつながる可能性がありました</li>
+</ul>
+<p>この問題を解決するため、型安全なファクトリメソッドパターンを採用した新しいAPIが導入されました。</p>
+<h2>新機能の概要</h2>
+<p>CDK の AWS Glue アルファモジュールに、型安全なパーティション射影設定用の新しい <code>PartitionProjectionConfiguration</code> クラスが追加されました。</p>
+<h3>主な特徴</h3>
+<ol>
+<li><p><strong>4種類のパーティション射影タイプをサポート</strong>:</p>
+<ul>
+<li><code>INTEGER</code>: 連続する整数値のパーティション</li>
+<li><code>DATE</code>: 日付・タイムスタンプのパーティション</li>
+<li><code>ENUM</code>: 明示的な値のリストによるパーティション</li>
+<li><code>INJECTED</code>: クエリ時に注入されるカスタムパーティション</li>
+</ul>
+</li>
+<li><p><strong>ファクトリメソッドによる型安全な設定</strong>:</p>
+<ul>
+<li>各タイプ専用のファクトリメソッド（<code>integer()</code>, <code>date()</code>, <code>enum()</code>, <code>injected()</code>）</li>
+<li>各メソッドに専用の Props インターフェースがあり、TypeScript の型システムが必須プロパティを強制</li>
+<li>コンパイル時に設定ミスを検出可能</li>
+</ul>
+</li>
+<li><p><strong>包括的なバリデーション</strong>:</p>
+<ul>
+<li>範囲の妥当性検証（min ≤ max）</li>
+<li>日付フォーマットの検証（Java SimpleDateFormat パターン）</li>
+<li>ENUM 値の検証（空文字列やカンマを含む値の禁止）</li>
+<li>適切なエラーメッセージの提供</li>
+</ul>
+</li>
+</ol>
+<h2>使い方</h2>
+<h3>INTEGER パーティション射影</h3>
+<p>連続する整数値を持つパーティションキーの場合：</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> glue <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@aws-cdk/aws-glue-alpha&#x27;</span>;
+
+<span class="hljs-keyword">declare</span> <span class="hljs-keyword">const</span> <span class="hljs-attr">myDatabase</span>: glue.<span class="hljs-property">Database</span>;
+
+<span class="hljs-keyword">new</span> glue.<span class="hljs-title function_">S3Table</span>(<span class="hljs-variable language_">this</span>, <span class="hljs-string">&#x27;MyTable&#x27;</span>, {
+  <span class="hljs-attr">database</span>: myDatabase,
+  <span class="hljs-attr">columns</span>: [{
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;data&#x27;</span>,
+    <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">STRING</span>,
+  }],
+  <span class="hljs-attr">partitionKeys</span>: [{
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;year&#x27;</span>,
+    <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">INTEGER</span>,
+  }],
+  <span class="hljs-attr">dataFormat</span>: glue.<span class="hljs-property">DataFormat</span>.<span class="hljs-property">JSON</span>,
+  <span class="hljs-attr">partitionProjection</span>: {
+    <span class="hljs-attr">year</span>: glue.<span class="hljs-property">PartitionProjectionConfiguration</span>.<span class="hljs-title function_">integer</span>({
+      <span class="hljs-attr">min</span>: <span class="hljs-number">2020</span>,        <span class="hljs-comment">// 最小値（必須）</span>
+      <span class="hljs-attr">max</span>: <span class="hljs-number">2023</span>,        <span class="hljs-comment">// 最大値（必須）</span>
+      <span class="hljs-attr">interval</span>: <span class="hljs-number">1</span>,      <span class="hljs-comment">// オプション、デフォルトは1</span>
+      <span class="hljs-attr">digits</span>: <span class="hljs-number">4</span>,        <span class="hljs-comment">// オプション、先頭ゼロ埋めの桁数（例: 0001, 0002）</span>
+    }),
+  },
+});
+</code></pre><h3>DATE パーティション射影</h3>
+<p>日付やタイムスタンプ値を持つパーティションキーの場合：</p>
+<pre><code class="hljs language-typescript"><span class="hljs-comment">// 固定日付の範囲を指定</span>
+<span class="hljs-keyword">new</span> glue.<span class="hljs-title function_">S3Table</span>(<span class="hljs-variable language_">this</span>, <span class="hljs-string">&#x27;MyTable&#x27;</span>, {
+  <span class="hljs-attr">database</span>: myDatabase,
+  <span class="hljs-attr">columns</span>: [{
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;data&#x27;</span>,
+    <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">STRING</span>,
+  }],
+  <span class="hljs-attr">partitionKeys</span>: [{
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;date&#x27;</span>,
+    <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">STRING</span>,
+  }],
+  <span class="hljs-attr">dataFormat</span>: glue.<span class="hljs-property">DataFormat</span>.<span class="hljs-property">JSON</span>,
+  <span class="hljs-attr">partitionProjection</span>: {
+    <span class="hljs-attr">date</span>: glue.<span class="hljs-property">PartitionProjectionConfiguration</span>.<span class="hljs-title function_">date</span>({
+      <span class="hljs-attr">min</span>: <span class="hljs-string">&#x27;2020-01-01&#x27;</span>,                      <span class="hljs-comment">// 開始日（必須）</span>
+      <span class="hljs-attr">max</span>: <span class="hljs-string">&#x27;2023-12-31&#x27;</span>,                      <span class="hljs-comment">// 終了日（必須）</span>
+      <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;yyyy-MM-dd&#x27;</span>,                   <span class="hljs-comment">// 日付フォーマット（必須、Java SimpleDateFormat）</span>
+      <span class="hljs-attr">interval</span>: <span class="hljs-number">1</span>,                            <span class="hljs-comment">// オプション、デフォルトは1</span>
+      <span class="hljs-attr">intervalUnit</span>: glue.<span class="hljs-property">DateIntervalUnit</span>.<span class="hljs-property">DAYS</span>, <span class="hljs-comment">// オプション: YEARS, MONTHS, WEEKS, DAYS, HOURS, MINUTES, SECONDS</span>
+    }),
+  },
+});
+
+<span class="hljs-comment">// NOW を使った相対日付の指定</span>
+<span class="hljs-keyword">new</span> glue.<span class="hljs-title function_">S3Table</span>(<span class="hljs-variable language_">this</span>, <span class="hljs-string">&#x27;MyTable&#x27;</span>, {
+  <span class="hljs-attr">database</span>: myDatabase,
+  <span class="hljs-attr">columns</span>: [{
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;data&#x27;</span>,
+    <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">STRING</span>,
+  }],
+  <span class="hljs-attr">partitionKeys</span>: [{
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;date&#x27;</span>,
+    <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">STRING</span>,
+  }],
+  <span class="hljs-attr">dataFormat</span>: glue.<span class="hljs-property">DataFormat</span>.<span class="hljs-property">JSON</span>,
+  <span class="hljs-attr">partitionProjection</span>: {
+    <span class="hljs-attr">date</span>: glue.<span class="hljs-property">PartitionProjectionConfiguration</span>.<span class="hljs-title function_">date</span>({
+      <span class="hljs-attr">min</span>: <span class="hljs-string">&#x27;NOW-3YEARS&#x27;</span>,  <span class="hljs-comment">// 現在から3年前</span>
+      <span class="hljs-attr">max</span>: <span class="hljs-string">&#x27;NOW&#x27;</span>,         <span class="hljs-comment">// 現在</span>
+      <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;yyyy-MM-dd&#x27;</span>,
+    }),
+  },
+});
+</code></pre><h3>ENUM パーティション射影</h3>
+<p>既知の値のセットを持つパーティションキーの場合：</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">new</span> glue.<span class="hljs-title function_">S3Table</span>(<span class="hljs-variable language_">this</span>, <span class="hljs-string">&#x27;MyTable&#x27;</span>, {
+  <span class="hljs-attr">database</span>: myDatabase,
+  <span class="hljs-attr">columns</span>: [{
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;data&#x27;</span>,
+    <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">STRING</span>,
+  }],
+  <span class="hljs-attr">partitionKeys</span>: [{
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;region&#x27;</span>,
+    <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">STRING</span>,
+  }],
+  <span class="hljs-attr">dataFormat</span>: glue.<span class="hljs-property">DataFormat</span>.<span class="hljs-property">JSON</span>,
+  <span class="hljs-attr">partitionProjection</span>: {
+    <span class="hljs-attr">region</span>: glue.<span class="hljs-property">PartitionProjectionConfiguration</span>.<span class="hljs-title function_">enum</span>({
+      <span class="hljs-attr">values</span>: [<span class="hljs-string">&#x27;us-east-1&#x27;</span>, <span class="hljs-string">&#x27;us-west-2&#x27;</span>, <span class="hljs-string">&#x27;eu-west-1&#x27;</span>], <span class="hljs-comment">// 許可する値のリスト（必須）</span>
+    }),
+  },
+});
+</code></pre><h3>INJECTED パーティション射影</h3>
+<p>クエリ時にカスタムパーティション値を注入する場合：</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">new</span> glue.<span class="hljs-title function_">S3Table</span>(<span class="hljs-variable language_">this</span>, <span class="hljs-string">&#x27;MyTable&#x27;</span>, {
+  <span class="hljs-attr">database</span>: myDatabase,
+  <span class="hljs-attr">columns</span>: [{
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;data&#x27;</span>,
+    <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">STRING</span>,
+  }],
+  <span class="hljs-attr">partitionKeys</span>: [{
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;custom&#x27;</span>,
+    <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">STRING</span>,
+  }],
+  <span class="hljs-attr">dataFormat</span>: glue.<span class="hljs-property">DataFormat</span>.<span class="hljs-property">JSON</span>,
+  <span class="hljs-attr">partitionProjection</span>: {
+    <span class="hljs-attr">custom</span>: glue.<span class="hljs-property">PartitionProjectionConfiguration</span>.<span class="hljs-title function_">injected</span>(),
+  },
+});
+</code></pre><h3>複数パーティションの射影設定</h3>
+<p>複数のパーティションキーに対して異なる射影タイプを設定できます：</p>
+<pre><code class="hljs language-typescript"><span class="hljs-keyword">new</span> glue.<span class="hljs-title function_">S3Table</span>(<span class="hljs-variable language_">this</span>, <span class="hljs-string">&#x27;MyTable&#x27;</span>, {
+  <span class="hljs-attr">database</span>: myDatabase,
+  <span class="hljs-attr">columns</span>: [{
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;data&#x27;</span>,
+    <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">STRING</span>,
+  }],
+  <span class="hljs-attr">partitionKeys</span>: [
+    {
+      <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;year&#x27;</span>,
+      <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">INTEGER</span>,
+    },
+    {
+      <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;month&#x27;</span>,
+      <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">INTEGER</span>,
+    },
+    {
+      <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;region&#x27;</span>,
+      <span class="hljs-attr">type</span>: glue.<span class="hljs-property">Schema</span>.<span class="hljs-property">STRING</span>,
+    },
+  ],
+  <span class="hljs-attr">dataFormat</span>: glue.<span class="hljs-property">DataFormat</span>.<span class="hljs-property">JSON</span>,
+  <span class="hljs-attr">partitionProjection</span>: {
+    <span class="hljs-attr">year</span>: glue.<span class="hljs-property">PartitionProjectionConfiguration</span>.<span class="hljs-title function_">integer</span>({
+      <span class="hljs-attr">min</span>: <span class="hljs-number">2020</span>,
+      <span class="hljs-attr">max</span>: <span class="hljs-number">2023</span>,
+    }),
+    <span class="hljs-attr">month</span>: glue.<span class="hljs-property">PartitionProjectionConfiguration</span>.<span class="hljs-title function_">integer</span>({
+      <span class="hljs-attr">min</span>: <span class="hljs-number">1</span>,
+      <span class="hljs-attr">max</span>: <span class="hljs-number">12</span>,
+      <span class="hljs-attr">digits</span>: <span class="hljs-number">2</span>,  <span class="hljs-comment">// 01, 02, ..., 12 のようにゼロ埋め</span>
+    }),
+    <span class="hljs-attr">region</span>: glue.<span class="hljs-property">PartitionProjectionConfiguration</span>.<span class="hljs-title function_">enum</span>({
+      <span class="hljs-attr">values</span>: [<span class="hljs-string">&#x27;us-east-1&#x27;</span>, <span class="hljs-string">&#x27;us-west-2&#x27;</span>],
+    }),
+  },
+});
+</code></pre><h2>注意点</h2>
+<h3>バリデーションと制約</h3>
+<ol>
+<li><p><strong>INTEGER 型の制約</strong>:</p>
+<ul>
+<li><code>min</code> と <code>max</code> は整数でなければなりません</li>
+<li><code>min</code> は <code>max</code> 以下である必要があります</li>
+<li><code>interval</code> は正の整数である必要があります</li>
+<li><code>digits</code> は 1 以上の整数である必要があります</li>
+</ul>
+</li>
+<li><p><strong>DATE 型の制約</strong>:</p>
+<ul>
+<li><code>format</code> は Java SimpleDateFormat の有効なパターンでなければなりません（例: <code>yyyy-MM-dd</code>, <code>yyyy-MM-dd HH:mm:ss</code>）</li>
+<li>無効なパターン文字が含まれている場合、コンパイル時にエラーが発生します</li>
+<li><code>interval</code> は正の整数である必要があります</li>
+<li>相対日付（<code>NOW</code>, <code>NOW-3YEARS</code> など）と固定日付の両方をサポート</li>
+</ul>
+</li>
+<li><p><strong>ENUM 型の制約</strong>:</p>
+<ul>
+<li><code>values</code> は空の配列であってはいけません</li>
+<li>値に空文字列を含めることはできません</li>
+<li>値にカンマ（<code>,</code>）を含めることはできません（内部的にカンマ区切りリストとしてシリアライズされるため）</li>
+</ul>
+</li>
+<li><p><strong>INJECTED 型</strong>:</p>
+<ul>
+<li>追加のプロパティは必要ありません</li>
+<li>クエリ実行時にパーティション値を SQL で指定する必要があります</li>
+</ul>
+</li>
+</ol>
+<h3>既存コードへの影響</h3>
+<ul>
+<li>この機能は新規追加であり、既存の文字列ベースの設定方法との後方互換性があります</li>
+<li>破壊的変更はありません</li>
+<li>新しい型安全な API への移行を推奨しますが、既存コードの修正は必須ではありません</li>
+</ul>
+<h3>パフォーマンスと使用シナリオ</h3>
+<ul>
+<li><p>パーティション射影は、以下のケースで特に効果的です：</p>
+<ul>
+<li>大量のパーティションを持つテーブル（数千〜数百万のパーティション）</li>
+<li>定期的に新しいパーティションが追加されるテーブル</li>
+<li>パーティションが予測可能なパターンに従う場合（整数、日付、列挙値など）</li>
+</ul>
+</li>
+<li><p>パーティション射影を使用する場合：</p>
+<ul>
+<li>AWS Glue Data Catalog のパーティションメタデータは無視されます</li>
+<li>射影されたパーティションが S3 に存在しない場合、クエリはエラーを返さずに0行を返します</li>
+<li>射影されたパーティションの半分以上が空の場合は、従来のパーティション管理を使用することを推奨します</li>
+</ul>
+</li>
+</ul>
+<h3>モジュールのバージョン</h3>
+<ul>
+<li>この機能は <code>@aws-cdk/aws-glue-alpha</code> モジュール（アルファ版）で提供されています</li>
+<li>AWS CDK v2.238.0 以降で利用可能です</li>
+<li>アルファモジュールのため、API は将来的に変更される可能性があります</li>
+</ul>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://github.com/aws/aws-cdk/releases/tag/v2.238.0">AWS CDK v2.238.0 リリースノート</a></li>
+<li><a href="https://github.com/aws/aws-cdk/pull/35660">AWS CDK PR #35660: feat(glue): typed partition projection</a></li>
+<li><a href="https://docs.aws.amazon.com/athena/latest/ug/partition-projection.html">AWS Athena ドキュメント: パーティション射影の使用</a></li>
+<li><a href="https://docs.aws.amazon.com/athena/latest/ug/partition-projection-supported-types.html">AWS Athena ドキュメント: パーティション射影のサポートされるタイプ</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://github.com/aws/aws-cdk/pull/35660" target="_blank" rel="noopener">元のページを開く</a></li><li>アップデート: <a href="https://github.com/aws/aws-cdk/releases/tag/v2.238.0" target="_blank" rel="noopener">v2.238.0</a></li><li>参照したコンテンツ: 2件</li></ul></div>
+</article>
+<footer>
+<p>Generated by <a href="https://github.com/konoken/update-unpacker">Update Unpacker</a> · 2026/2/9</p>
+</footer>
+</body>
+</html>

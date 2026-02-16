@@ -8,6 +8,14 @@
     "sourceName": "AWS What's New"
   },
   {
+    "id": "HpQSZveqyAlM",
+    "slug": "aws-cdk-glue-typed-partition-projection",
+    "title": "AWS CDK Glueに型安全なパーティション射影設定機能を追加",
+    "date": "2026-02-09",
+    "type": "FEAT",
+    "sourceName": "AWS CDK"
+  },
+  {
     "id": "B2jGRi4879sQ",
     "slug": "sagemaker-studio-soci-indexing-faster-startup",
     "title": "Amazon SageMaker StudioがSOCIインデックス作成をサポート、コンテナ起動時間を30〜50%短縮",
