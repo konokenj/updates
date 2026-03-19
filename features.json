@@ -8,6 +8,14 @@
     "sourceName": "AWS What's New"
   },
   {
+    "id": "s8G3sZrZjUzj",
+    "slug": "aurora-dsql-identity-columns-sequence-support",
+    "title": "Amazon Aurora DSQLがアイデンティティカラムとシーケンスオブジェクトをサポート",
+    "date": "2026-02-13",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "HpQSZveqyAlM",
     "slug": "aws-cdk-glue-typed-partition-projection",
     "title": "AWS CDK Glueに型安全なパーティション射影設定機能を追加",

@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon Aurora DSQLがアイデンティティカラムとシーケンスオブジェクトをサポート</title>
+<meta name="description" content="Aurora DSQLで自動インクリメントID生成をサポート。注文番号やアカウントIDなど整数ベースの識別子をSQL標準構文で作成可能。PostgreSQLアプリケーションの移行を簡素化し、カスタムID生成ロジックが不要に。">
+<meta property="og:title" content="Amazon Aurora DSQLがアイデンティティカラムとシーケンスオブジェクトをサポート">
+<meta property="og:description" content="Aurora DSQLで自動インクリメントID生成をサポート。注文番号やアカウントIDなど整数ベースの識別子をSQL標準構文で作成可能。PostgreSQLアプリケーションの移行を簡素化し、カスタムID生成ロジックが不要に。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/s8G3sZrZjUzj/aurora-dsql-identity-columns-sequence-support/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/s8G3sZrZjUzj/aurora-dsql-identity-columns-sequence-support/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>Amazon Aurora DSQLがアイデンティティカラムとシーケンスオブジェクトをサポート</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What's New</span>
+<span> · 2026/2/13</span>
+</div>
+<div class="summary"><strong>要約:</strong> Aurora DSQLで自動インクリメントID生成をサポート。注文番号やアカウントIDなど整数ベースの識別子をSQL標準構文で作成可能。PostgreSQLアプリケーションの移行を簡素化し、カスタムID生成ロジックが不要に。</div>
+<h2>新機能の背景</h2>
+<h3>PostgreSQLアプリケーションの移行を容易に</h3>
+<p>従来、PostgreSQLからAurora DSQLへの移行では、自動インクリメント機能を持つアイデンティティカラムやシーケンスオブジェクトがサポートされていませんでした。この機能がないことで、既存のPostgreSQLアプリケーションの移行には追加の開発作業が必要となり、移行の障壁となっていました。</p>
+<h3>データベース管理の整数IDの需要</h3>
+<p>多くのアプリケーションでは、注文番号、アカウントID、オペレーション参照番号などの人間にとって読みやすい整数ベースのIDが求められます。これまでは、アプリケーションコードやミドルウェアにカスタムID生成ロジックを実装する必要があり、開発の複雑性が増していました。</p>
+<h3>分散データベースにおけるID生成の課題</h3>
+<p>Aurora DSQLは分散SQLデータベースとして設計されており、UUIDベースの識別子が推奨されてきました。しかし、レポート作成、外部システムとの統合、ビジネスプロセスにおいては、コンパクトで順序性のある整数IDが必要となるケースが多く存在します。</p>
+<h2>新機能の概要</h2>
+<h3>アイデンティティカラム（IDENTITY Columns）</h3>
+<p>アイデンティティカラムは、データベースが自動的に生成する特別なカラムで、テーブルに新しい行が挿入されるたびに、一意の整数値を自動的に割り当てます。</p>
+<p><strong>主な特徴：</strong></p>
+<ul>
+<li><code>GENERATED ALWAYS AS IDENTITY</code>または<code>GENERATED BY DEFAULT AS IDENTITY</code>構文を使用して作成</li>
+<li>暗黙的なシーケンスから自動的に値を生成</li>
+<li><code>ALWAYS</code>オプションでは明示的な値の挿入を制限し、より強力な保護を提供</li>
+<li><code>BY DEFAULT</code>オプションでは明示的な値の挿入を許可し、デフォルト値のような動作を実現</li>
+<li>自動的に<code>NOT NULL</code>制約が適用される</li>
+</ul>
+<p><strong>作成例：</strong></p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE TABLE</span> people (
+    id <span class="hljs-type">bigint</span> GENERATED ALWAYS <span class="hljs-keyword">AS</span> <span class="hljs-keyword">IDENTITY</span> (CACHE <span class="hljs-number">70000</span>),
+    name text,
+    address text
+);
+</code></pre><h3>シーケンスオブジェクト（SEQUENCE Objects）</h3>
+<p>シーケンスは、一連の一意な整数値を生成するためのデータベースオブジェクトです。テーブルから独立して管理でき、複数のテーブルやカラムで共有することができます。</p>
+<p><strong>主な特徴：</strong></p>
+<ul>
+<li><code>CREATE SEQUENCE</code>コマンドで作成</li>
+<li><code>nextval()</code>, <code>currval()</code>, <code>setval()</code>, <code>lastval()</code>などの操作関数をサポート</li>
+<li>INCREMENT BY、START WITH、MAXVALUE、MINVALUEなどのパラメータで動作をカスタマイズ可能</li>
+<li>CACHE設定による高性能なID生成</li>
+</ul>
+<h3>PostgreSQL互換性</h3>
+<p>Aurora DSQLのアイデンティティカラムとシーケンスは、PostgreSQLの標準SQL構文と互換性があります。これにより、既存のPostgreSQLアプリケーションのスキーマやクエリをほとんど変更せずに移行できます。</p>
+<h3>利用可能なリージョン</h3>
+<p>この機能は、Aurora DSQLが提供されているすべてのAWSリージョンで利用可能です（2026年2月時点で14リージョン：US East (N. Virginia)、US East (Ohio)、US West (Oregon)、Canada (Central)、Canada West (Calgary)、Asia Pacific (Melbourne)、Asia Pacific (Sydney)、Asia Pacific (Osaka)、Asia Pacific (Tokyo)、Asia Pacific (Seoul)、Europe (Ireland)、Europe (London)、Europe (Frankfurt)、Europe (Paris)）。</p>
+<h2>使い方</h2>
+<h3>基本的なアイデンティティカラムの作成</h3>
+<p><strong>ALWAYS オプション：</strong></p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE TABLE</span> orders (
+    order_id <span class="hljs-type">bigint</span> GENERATED ALWAYS <span class="hljs-keyword">AS</span> <span class="hljs-keyword">IDENTITY</span> (CACHE <span class="hljs-number">70000</span>),
+    customer_name text,
+    order_date <span class="hljs-type">timestamp</span>,
+    <span class="hljs-keyword">PRIMARY KEY</span> (order_id)
+);
+
+<span class="hljs-comment">-- 挿入時にIDを指定しない（自動生成）</span>
+<span class="hljs-keyword">INSERT INTO</span> orders (customer_name, order_date) 
+<span class="hljs-keyword">VALUES</span> (<span class="hljs-string">&#x27;山田太郎&#x27;</span>, NOW());
+
+<span class="hljs-comment">-- DEFAULTキーワードでも明示的に自動生成を要求可能</span>
+<span class="hljs-keyword">INSERT INTO</span> orders (order_id, customer_name, order_date) 
+<span class="hljs-keyword">VALUES</span> (<span class="hljs-keyword">DEFAULT</span>, <span class="hljs-string">&#x27;佐藤花子&#x27;</span>, NOW());
+</code></pre><p><strong>BY DEFAULT オプション（明示的な値の挿入を許可）：</strong></p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE TABLE</span> accounts (
+    account_id <span class="hljs-type">bigint</span> GENERATED <span class="hljs-keyword">BY</span> <span class="hljs-keyword">DEFAULT</span> <span class="hljs-keyword">AS</span> <span class="hljs-keyword">IDENTITY</span> (CACHE <span class="hljs-number">70000</span>),
+    account_name text
+);
+
+<span class="hljs-comment">-- 自動生成</span>
+<span class="hljs-keyword">INSERT INTO</span> accounts (account_name) <span class="hljs-keyword">VALUES</span> (<span class="hljs-string">&#x27;企業アカウントA&#x27;</span>);
+
+<span class="hljs-comment">-- 明示的な値の挿入も可能</span>
+<span class="hljs-keyword">INSERT INTO</span> accounts (account_id, account_name) <span class="hljs-keyword">VALUES</span> (<span class="hljs-number">1000</span>, <span class="hljs-string">&#x27;特別アカウント&#x27;</span>);
+</code></pre><h3>シーケンスの作成と利用</h3>
+<p><strong>シーケンスの作成：</strong></p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE</span> SEQUENCE invoice_number_seq
+    <span class="hljs-keyword">START</span> <span class="hljs-keyword">WITH</span> <span class="hljs-number">1000</span>
+    INCREMENT <span class="hljs-keyword">BY</span> <span class="hljs-number">1</span>
+    CACHE <span class="hljs-number">10000</span>;
+</code></pre><p><strong>シーケンスの使用：</strong></p>
+<pre><code class="hljs language-sql"><span class="hljs-comment">-- 次の値を取得</span>
+<span class="hljs-keyword">SELECT</span> nextval(<span class="hljs-string">&#x27;invoice_number_seq&#x27;</span>);
+
+<span class="hljs-comment">-- テーブルへの挿入で使用</span>
+<span class="hljs-keyword">INSERT INTO</span> invoices (invoice_number, customer_id, amount)
+<span class="hljs-keyword">VALUES</span> (nextval(<span class="hljs-string">&#x27;invoice_number_seq&#x27;</span>), <span class="hljs-number">123</span>, <span class="hljs-number">50000</span>);
+
+<span class="hljs-comment">-- 現在の値を確認</span>
+<span class="hljs-keyword">SELECT</span> currval(<span class="hljs-string">&#x27;invoice_number_seq&#x27;</span>);
+
+<span class="hljs-comment">-- 最後に挿入された値を取得</span>
+<span class="hljs-keyword">SELECT</span> lastval();
+</code></pre><h3>CACHEサイズの選択</h3>
+<p>Aurora DSQLの分散アーキテクチャにおいて、CACHE設定は性能に重要な影響を与えます。</p>
+<p><strong>大きなCACHEサイズ（CACHE &gt;= 65536）が適している場合：</strong></p>
+<ul>
+<li>高頻度でIDが生成されるワークロード</li>
+<li>多数の同時セッションから挿入が行われる</li>
+<li>IDの間に欠番が発生しても問題ない</li>
+<li>例：IoTテレメトリー、イベント取り込み、ジョブ実行ID、サポートケース参照番号</li>
+</ul>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE TABLE</span> telemetry_events (
+    event_id <span class="hljs-type">bigint</span> GENERATED ALWAYS <span class="hljs-keyword">AS</span> <span class="hljs-keyword">IDENTITY</span> (CACHE <span class="hljs-number">100000</span>),
+    device_id text,
+    event_data jsonb,
+    recorded_at <span class="hljs-type">timestamp</span>
+);
+</code></pre><p><strong>小さなCACHEサイズ（CACHE 1）が適している場合：</strong></p>
+<ul>
+<li>IDの生成頻度が比較的低い</li>
+<li>IDが割り当て順序に従うことが期待される</li>
+<li>欠番を最小化することが重要</li>
+<li>例：アカウント番号、参照番号</li>
+</ul>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE TABLE</span> customer_accounts (
+    account_number <span class="hljs-type">bigint</span> GENERATED ALWAYS <span class="hljs-keyword">AS</span> <span class="hljs-keyword">IDENTITY</span> (CACHE <span class="hljs-number">1</span>),
+    account_name text,
+    created_at <span class="hljs-type">timestamp</span>
+);
+</code></pre><h3>UUIDとの併用パターン</h3>
+<p>Aurora DSQLでは、スケーラビリティが重要な場合にUUIDを主キーとして使用することが推奨されています。整数IDは、人間が読みやすい識別子やレポート用の補助的な識別子として併用することができます。</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE TABLE</span> products (
+    product_uuid uuid <span class="hljs-keyword">DEFAULT</span> gen_random_uuid() <span class="hljs-keyword">PRIMARY KEY</span>,
+    product_number <span class="hljs-type">bigint</span> GENERATED ALWAYS <span class="hljs-keyword">AS</span> <span class="hljs-keyword">IDENTITY</span> (CACHE <span class="hljs-number">10000</span>),
+    product_name text,
+    price <span class="hljs-type">numeric</span>(<span class="hljs-number">10</span>,<span class="hljs-number">2</span>)
+);
+
+<span class="hljs-comment">-- UUIDは主キーとして内部的に使用</span>
+<span class="hljs-comment">-- product_numberは外部向けの製品番号として使用</span>
+</code></pre><h3>アイデンティティカラムの変更</h3>
+<p>既存のアイデンティティカラムの設定は、<code>ALTER TABLE</code>コマンドで変更できます。</p>
+<pre><code class="hljs language-sql"><span class="hljs-comment">-- CACHE設定の変更</span>
+<span class="hljs-keyword">ALTER TABLE</span> orders 
+    <span class="hljs-keyword">ALTER</span> <span class="hljs-keyword">COLUMN</span> order_id <span class="hljs-keyword">SET</span> CACHE <span class="hljs-number">50000</span>;
+
+<span class="hljs-comment">-- GENERATED動作の変更</span>
+<span class="hljs-keyword">ALTER TABLE</span> orders 
+    <span class="hljs-keyword">ALTER</span> <span class="hljs-keyword">COLUMN</span> order_id <span class="hljs-keyword">SET</span> GENERATED <span class="hljs-keyword">BY</span> <span class="hljs-keyword">DEFAULT</span>;
+
+<span class="hljs-comment">-- アイデンティティプロパティの削除</span>
+<span class="hljs-keyword">ALTER TABLE</span> orders 
+    <span class="hljs-keyword">ALTER</span> <span class="hljs-keyword">COLUMN</span> order_id <span class="hljs-keyword">DROP</span> <span class="hljs-keyword">IDENTITY</span>;
+</code></pre><h2>注意点</h2>
+<h3>1. 一意性の保証について</h3>
+<p>アイデンティティカラムは自動的に一意な値を生成しますが、<strong>一意性制約は自動的には適用されません</strong>。一意性を強制するには、明示的に<code>PRIMARY KEY</code>または<code>UNIQUE</code>制約を定義する必要があります。</p>
+<pre><code class="hljs language-sql"><span class="hljs-comment">-- 推奨：PRIMARY KEYまたはUNIQUE制約を追加</span>
+<span class="hljs-keyword">CREATE TABLE</span> orders (
+    order_id <span class="hljs-type">bigint</span> GENERATED ALWAYS <span class="hljs-keyword">AS</span> <span class="hljs-keyword">IDENTITY</span> (CACHE <span class="hljs-number">70000</span>),
+    order_info text,
+    <span class="hljs-keyword">PRIMARY KEY</span> (order_id)  <span class="hljs-comment">-- 一意性を保証</span>
+);
+</code></pre><h3>2. CACHE設定の重要性</h3>
+<p><code>CACHE</code>設定は、Aurora DSQLの分散環境でのパフォーマンスに大きな影響を与えます。</p>
+<p><strong>注意点：</strong></p>
+<ul>
+<li>CACHEサイズが小さすぎると、分散環境での調整オーバーヘッドが増加し、スループットが低下する</li>
+<li>CACHEサイズが大きすぎると、IDの欠番が大きくなる可能性がある</li>
+<li>デフォルトのCACHE設定を使用する場合は、ワークロードパターンに適しているか確認する</li>
+</ul>
+<h3>3. 欠番の発生</h3>
+<p>以下の状況でIDに欠番が発生する可能性があります：</p>
+<ul>
+<li>トランザクションのロールバック</li>
+<li>複数セッションでのCANCEL操作による値のキャッシュ</li>
+<li>サービスの再起動や障害発生時</li>
+</ul>
+<p><strong>対策：</strong> 欠番が許容できないビジネスロジックの場合は、CACHE=1を設定し、生成頻度を低く保つ必要があります。</p>
+<h3>4. データ型の制限</h3>
+<p>アイデンティティカラムに使用できるデータ型は、シーケンスがサポートするデータ型に限定されます：</p>
+<ul>
+<li><code>smallint</code>（2バイト）</li>
+<li><code>integer</code>（4バイト）</li>
+<li><code>bigint</code>（8バイト）</li>
+</ul>
+<p>大量のIDが必要な場合は、<code>bigint</code>の使用を推奨します。</p>
+<h3>5. トランザクション制限との関係</h3>
+<p>Aurora DSQLには、単一トランザクションで変更できる行数に制限があります。大量のデータを一度に挿入する場合は、バッチ処理を1,000行単位などに分割することが推奨されます。</p>
+<pre><code class="hljs language-sql"><span class="hljs-comment">-- バッチ処理の例</span>
+DO $$
+<span class="hljs-keyword">DECLARE</span>
+    batch_size <span class="hljs-type">INT</span> :<span class="hljs-operator">=</span> <span class="hljs-number">1000</span>;
+<span class="hljs-keyword">BEGIN</span>
+    <span class="hljs-keyword">FOR</span> i <span class="hljs-keyword">IN</span> <span class="hljs-number">1.</span><span class="hljs-number">.10</span> LOOP
+        <span class="hljs-keyword">INSERT INTO</span> events (event_type, event_data)
+        <span class="hljs-keyword">SELECT</span> <span class="hljs-string">&#x27;type&#x27;</span> <span class="hljs-operator">||</span> j, <span class="hljs-string">&#x27;data&#x27;</span> <span class="hljs-operator">||</span> j
+        <span class="hljs-keyword">FROM</span> generate_series(<span class="hljs-number">1</span>, batch_size) j;
+        <span class="hljs-keyword">COMMIT</span>;
+    <span class="hljs-keyword">END</span> LOOP;
+<span class="hljs-keyword">END</span> $$;
+</code></pre><h3>6. 既存のPostgreSQLからの移行時の注意</h3>
+<ul>
+<li>PostgreSQLの<code>SERIAL</code>型を使用している場合は、<code>GENERATED AS IDENTITY</code>構文に置き換えることが推奨される（より標準SQL準拠）</li>
+<li>既存のシーケンス定義は互換性があるが、CACHE設定を見直してAurora DSQLの分散環境に最適化する必要がある</li>
+</ul>
+<h3>7. UUIDとの使い分け</h3>
+<p>Aurora DSQLの公式ドキュメントでは、以下のガイダンスが示されています：</p>
+<ul>
+<li><strong>主キーには原則としてUUIDを使用</strong>：分散環境での調整が不要でスケーラビリティが高い</li>
+<li><strong>整数IDは補助的な識別子として使用</strong>：人間が読みやすい参照番号、レポート、外部インターフェース向け</li>
+</ul>
+<h3>8. 料金への影響</h3>
+<p>アイデンティティカラムとシーケンスの使用自体に追加料金はかかりませんが、以下の点に注意：</p>
+<ul>
+<li>小さなCACHE設定では、調整のためのトランザクションが増加し、間接的にコストに影響する可能性がある</li>
+<li>大きなCACHE設定を使用することで、調整オーバーヘッドを削減し、コスト効率を向上できる</li>
+</ul>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/02/amazon-aurora-dsql-adds-identity-columns-sequence/">Amazon Aurora DSQL adds support for IDENTITY columns and SEQUENCE objects</a> - AWS What&#39;s New</li>
+<li><a href="https://docs.aws.amazon.com/aurora-dsql/latest/userguide/sequences-identity-columns.html">Sequences and identity columns - Amazon Aurora DSQL</a> - AWS公式ドキュメント</li>
+<li><a href="https://docs.aws.amazon.com/aurora-dsql/latest/userguide/sequences-identity-columns-overview.html">Identity columns - Amazon Aurora DSQL</a> - AWS公式ドキュメント</li>
+<li><a href="https://docs.aws.amazon.com/aurora-dsql/latest/userguide/sequences-identity-columns-working-with.html">Working with sequences and identity columns - Amazon Aurora DSQL</a> - AWS公式ドキュメント</li>
+<li><a href="https://docs.aws.amazon.com/aurora-dsql/latest/userguide/working-with-postgresql-compatibility-migration-guide.html">Migrating from PostgreSQL to Aurora DSQL</a> - AWS公式ドキュメント</li>
+<li><a href="https://aws.amazon.com/rds/aurora/dsql/">Amazon Aurora DSQL Product Page</a> - AWS公式サイト</li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/02/amazon-aurora-dsql-adds-identity-columns-sequence/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 1件</li></ul></div>
+</article>
+<footer>
+<p>Generated by <a href="https://github.com/konoken/update-unpacker">Update Unpacker</a> · 2026/2/13</p>
+</footer>
+</body>
+</html>
