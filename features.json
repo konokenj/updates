@@ -1,5 +1,13 @@
 [
   {
+    "id": "mScCCJVWuNZq",
+    "slug": "aurora-postgresql-express-configuration-serverless",
+    "title": "Amazon Aurora PostgreSQLがエクスプレス設定に対応、VPC不要で数秒以内にサーバーレスDBを作成・接続可能に",
+    "date": "2026-03-25",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "LefQlvM26DKF",
     "slug": "rds-aurora-snapshot-restore-backup-configuration",
     "title": "Amazon RDSでスナップショット復元時にバックアップ設定を指定可能に",

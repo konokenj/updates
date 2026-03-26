@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon Aurora PostgreSQLがエクスプレス設定に対応、VPC不要で数秒以内にサーバーレスDBを作成・接続可能に</title>
+<meta name="description" content="Aurora PostgreSQLにエクスプレス設定が追加され、VPC不要で数秒以内にServerless v2クラスターを起動可能に。インターネットアクセスゲートウェイとIAM認証をデフォルト設定し、CloudShellやpsqlから即時接続できる。AWS Free Tierにも対応。">
+<meta property="og:title" content="Amazon Aurora PostgreSQLがエクスプレス設定に対応、VPC不要で数秒以内にサーバーレスDBを作成・接続可能に">
+<meta property="og:description" content="Aurora PostgreSQLにエクスプレス設定が追加され、VPC不要で数秒以内にServerless v2クラスターを起動可能に。インターネットアクセスゲートウェイとIAM認証をデフォルト設定し、CloudShellやpsqlから即時接続できる。AWS Free Tierにも対応。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/mScCCJVWuNZq/aurora-postgresql-express-configuration-serverless/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/mScCCJVWuNZq/aurora-postgresql-express-configuration-serverless/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>Amazon Aurora PostgreSQLがエクスプレス設定に対応、VPC不要で数秒以内にサーバーレスDBを作成・接続可能に</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What's New</span>
+<span> · 2026/3/25</span>
+</div>
+<div class="summary"><strong>要約:</strong> Aurora PostgreSQLにエクスプレス設定が追加され、VPC不要で数秒以内にServerless v2クラスターを起動可能に。インターネットアクセスゲートウェイとIAM認証をデフォルト設定し、CloudShellやpsqlから即時接続できる。AWS Free Tierにも対応。</div>
+<h2>新機能の背景</h2>
+<p>AWS re:Invent 2025 において、AWSのデータベース担当バイスプレジデントである Colin Lazier 氏は「アイデアの速度でビルドする（build at the speed of an idea）」ことの重要性を強調しました。Amazon DynamoDB や Amazon Aurora DSQL ではすでに数秒で本番対応データベースを作成できる体験が提供されており、Aurora Serverless についても同様の体験を望む多くの顧客からの要望がありました。</p>
+<p>従来の Aurora PostgreSQL クラスター作成には、VPC・サブネットグループ・セキュリティグループの事前設定など、多くのネットワーク設定が必要であり、初回セットアップから最初のクエリ実行までに多大な時間と手間がかかっていました。この課題を解決するため、AWSは事前設定済みのデフォルト値を使って最小限の操作でデータベースを起動できる「エクスプレス設定（Express Configuration）」を開発し、2026年3月25日に一般提供（GA）を開始しました。</p>
+<h2>新機能の概要</h2>
+<p>エクスプレス設定は、Aurora PostgreSQL Serverless クラスターを<strong>わずか2クリック・数秒以内</strong>に起動できる、新しいストリームライン化されたデータベース作成エクスペリエンスです。以下の5つのコンポーネントが連携して動作します。</p>
+<h3>① VPC不要のシンプルな接続</h3>
+<p>エクスプレス設定で作成されたクラスターは <strong>VPC外に配置</strong>されます。VPN や AWS Direct Connect の設定は一切不要で、インターネット経由でどこからでもセキュアに接続できます。</p>
+<h3>② インターネットアクセスゲートウェイ</h3>
+<p>Aurora の新しいマネージドコンポーネントである<strong>インターネットアクセスゲートウェイ</strong>が自動で有効化されます。</p>
+<ul>
+<li><strong>PostgreSQL ワイヤープロトコル</strong>を完全サポートし、psql、pgAdmin、各種SDK・ORM・AIエージェントなど幅広いツールから接続可能</li>
+<li>**複数のアベイラビリティゾーン（AZ）**に分散配置され、Aurora クラスターと同等の高可用性を提供</li>
+<li>AWS Shield との統合によりDDoS保護も内蔵</li>
+<li>ソフトウェアのアップデートやパッチ適用はAWSが管理（利用者の作業不要）</li>
+</ul>
+<h3>③ IAM認証のデフォルト設定（パスワードレス認証）</h3>
+<p>管理者ユーザーに対して <strong>AWS IAM認証</strong>がデフォルトで設定されます。追加設定なしで最初からパスワードレスの安全なデータベース接続が可能です。IAMトークンは15分間有効な短命トークンとして発行され、エフェメラルなアクセス制御を実現します。</p>
+<h3>④ Aurora Serverless v2 インスタンス</h3>
+<p>作成されるインスタンスは <strong>Aurora Serverless v2</strong> です。Aurora Capacity Units（ACU）単位で使用分のみ秒単位課金され、ゼロキャパシティから自動的にスケールアップ・ダウン・シャットダウンが行われます。</p>
+<h3>⑤ AWS Free Tier 対応</h3>
+<p>Aurora PostgreSQL Serverless が <strong>AWS Free Tier</strong> の対象となりました（Free プラン・有料プランの両方で利用可能）。初期費用なしでAuroraを試すことができます。また、re:Invent 2025で発表された新しい Free Tier では、サインアップ時に $100 のクレジット（条件達成で追加 $100）が付与され、RDS・Lambda・Bedrock などとあわせて活用できます。</p>
+<h3>他サービスとの連携</h3>
+<table>
+<thead>
+<tr>
+<th>連携先</th>
+<th>概要</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>AWS CloudShell</strong></td>
+<td>コンソールから直接起動し、接続コマンドが事前入力されてすぐにSQLを実行可能</td>
+</tr>
+<tr>
+<td><strong>v0 by Vercel</strong></td>
+<td>自然言語でフルスタックWebアプリを構築。Aurora PostgreSQL・Aurora DSQL・DynamoDBに対応</td>
+</tr>
+<tr>
+<td><strong>Vercel Marketplace</strong></td>
+<td>Vercel から直接 AWS データベースを作成・接続</td>
+</tr>
+<tr>
+<td><strong>Kiro IDE</strong></td>
+<td>AI エージェント支援開発で Aurora PostgreSQL バックエンドアプリを高速構築</td>
+</tr>
+</tbody></table>
+<h2>使い方</h2>
+<h3>データベースの作成</h3>
+<p><strong>マネジメントコンソールから（2クリック）</strong></p>
+<ol>
+<li><a href="https://console.aws.amazon.com/rds/">Amazon RDS コンソール</a> を開く</li>
+<li>ナビゲーションペインで <strong>「Databases」</strong> を選択</li>
+<li>ウェルカムページ左側の <strong>「エクスプレス設定で作成」</strong> セクションで 🚀 <strong>「作成」</strong> をクリック</li>
+<li>表示されたダイアログでDBクラスター識別子や容量範囲を必要に応じて変更</li>
+<li><strong>「データベースの作成」</strong> をクリック → 数秒で「Available」ステータスに</li>
+</ol>
+<p><strong>AWS CLI から（1コマンド）</strong></p>
+<p><code>--with-express-configuration</code> パラメーター1つで、クラスター・インスタンス・インターネットアクセスゲートウェイ・IAM認証のセットアップがすべて完了します。</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># Linux / macOS</span>
+aws rds create-db-cluster \
+    --db-cluster-identifier my-express-cluster \
+    --engine aurora-postgresql \
+    --with-express-configuration
+
+<span class="hljs-comment"># Windows</span>
+aws rds create-db-cluster ^
+    --db-cluster-identifier my-express-cluster ^
+    --engine aurora-postgresql ^
+    --with-express-configuration
+</code></pre><p><strong>AWS SDK から</strong></p>
+<p><code>CreateDBCluster</code> API に <code>--express-configuration</code> パラメーターを指定して呼び出します。</p>
+<hr>
+<h3>データベースへの接続</h3>
+<p>作成後、コンソールの <strong>「Connectivity &amp; security」タブ</strong> に3種類の接続方法が表示されます。</p>
+<h4>方法1：コードスニペット（SDK・API・サードパーティツール向け）</h4>
+<p>コンソールが各言語のコードスニペットを動的生成します。対応言語：.NET、Go、JDBC、Node.js、PHP、PSQL、Python、TypeScript。</p>
+<p>以下は Python（psycopg2）の接続例です：</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">import</span> psycopg2
+<span class="hljs-keyword">import</span> boto3
+
+<span class="hljs-comment"># IAM認証トークンを生成（15分間有効）</span>
+auth_token = boto3.client(<span class="hljs-string">&#x27;rds&#x27;</span>, region_name=<span class="hljs-string">&#x27;ap-northeast-1&#x27;</span>).generate_db_auth_token(
+    DBHostname=<span class="hljs-string">&#x27;my-cluster-instance-1.xxxx.ap-northeast-1.rds.amazonaws.com&#x27;</span>,
+    Port=<span class="hljs-number">5432</span>,
+    DBUsername=<span class="hljs-string">&#x27;postgres&#x27;</span>,
+    Region=<span class="hljs-string">&#x27;ap-northeast-1&#x27;</span>
+)
+
+conn = psycopg2.connect(
+    host=<span class="hljs-string">&#x27;my-cluster-instance-1.xxxx.ap-northeast-1.rds.amazonaws.com&#x27;</span>,
+    port=<span class="hljs-number">5432</span>,
+    database=<span class="hljs-string">&#x27;postgres&#x27;</span>,
+    user=<span class="hljs-string">&#x27;postgres&#x27;</span>,
+    password=auth_token,
+    sslmode=<span class="hljs-string">&#x27;require&#x27;</span>
+)
+</code></pre><h4>方法2：CloudShell（ブラウザから即時接続）</h4>
+<ol>
+<li>「Connectivity &amp; security」タブで <strong>「CloudShell」</strong> を選択</li>
+<li><strong>「Launch CloudShell」</strong> をクリック</li>
+<li>接続先クラスター情報が事前入力されたコマンドが表示されるので <strong>「Run」</strong> をクリック</li>
+<li><code>postgres =&gt;</code> プロンプトでそのまま SQL を実行</li>
+</ol>
+<p>前提条件なし・追加インストール不要で最も手軽に接続できます。</p>
+<h4>方法3：エンドポイント + トークン取得ユーティリティ（pgAdmin等向け）</h4>
+<p>ユーザー名/パスワード形式のみ対応するツール（pgAdmin など）向けの方法です。</p>
+<ol>
+<li>「Endpoints」タブから writer エンドポイント・ポート・マスターユーザー名・DB名をコピー</li>
+<li><strong>「Get token」</strong> ユーティリティで IAM 認証トークンを生成（15分間有効）</li>
+<li>pgAdmin の「サーバー追加」ダイアログのパスワード欄にトークンを貼り付けて接続</li>
+</ol>
+<blockquote>
+<p>⚠️ トークンは15分で失効します。ツールが接続を切断した場合は再生成が必要です。</p>
+</blockquote>
+<hr>
+<h3>必要なIAMポリシー（接続前に確認）</h3>
+<p>データベースへの接続には、使用するIAMアイデンティティに <code>rds-db:connect</code> 権限が必要です。また、クラスター作成には以下の権限が最低限必要です：</p>
+<ul>
+<li><code>ec2:DescribeAvailabilityZones</code></li>
+<li><code>iam:CreateServiceLinkedRole</code></li>
+<li><code>rds:CreateDBCluster</code></li>
+<li><code>rds:CreateDBInstance</code></li>
+<li><code>rds:EnableInternetAccessGateway</code></li>
+</ul>
+<h2>注意点</h2>
+<p>エクスプレス設定は利便性と引き換えに、いくつかの重要な制約があります。本番利用前に以下を確認してください。</p>
+<h3>エンジン・リージョン制限</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>対応エンジン</strong></td>
+<td>Aurora PostgreSQL のみ（Aurora MySQL は非対応）</td>
+</tr>
+<tr>
+<td><strong>利用不可リージョン</strong></td>
+<td>中国リージョン、AWS GovCloud (US)、中東 (UAE)、中東 (バーレーン)</td>
+</tr>
+<tr>
+<td><strong>エンジンバージョン</strong></td>
+<td>作成時の指定不可（デフォルトバージョン固定）。アップグレードは可能だがダウングレードは不可</td>
+</tr>
+</tbody></table>
+<h3>セキュリティ・認証の制約</h3>
+<ul>
+<li><strong>IAM認証のみ</strong>：Secrets Manager による認証情報管理・Kerberos認証は使用不可。IAM認証を無効化することもできません</li>
+<li><strong>暗号化キー</strong>：AWS/RDS サービス管理キーで暗号化済み。カスタム AWS KMS キーへの変更は不可</li>
+<li><strong>SSL暗号スイート</strong>：設定不可（インターネットアクセスゲートウェイがデフォルト設定を使用）</li>
+<li><strong>ポート</strong>：PostgreSQL デフォルトポート（5432）固定。変更不可</li>
+</ul>
+<blockquote>
+<p>⚠️ <strong>重要</strong>：管理者ユーザーの <code>rds_iam</code> ロールを無効化すると、新規接続が一切できなくなります。誤って無効化した場合は <code>modify-db-cluster</code> で <code>--master-user-authentication-type iam-db-auth</code> を再設定してください。</p>
+</blockquote>
+<h3>ネットワーク・VPCの制約</h3>
+<ul>
+<li><strong>VPCへの関連付け不可</strong>：RDS Proxy も使用できません</li>
+<li><strong>VPC内マシンから接続する場合</strong>：そのマシンがインターネットへのアウトバウンド/インバウンドトラフィックを許可している必要があります</li>
+<li><strong>インターネットアクセスゲートウェイの無効化不可</strong></li>
+<li><strong>IPv4のみ対応</strong>（IPv6は非サポート）</li>
+</ul>
+<h3>非対応機能一覧</h3>
+<p>エクスプレス設定クラスターでは、VPCへの非関連付けに起因して以下の機能が使用できません：</p>
+<ul>
+<li>Aurora Limitless Database</li>
+<li>Aurora グローバルデータベース</li>
+<li>RDS Proxy</li>
+<li>Aurora Zero-ETL 統合</li>
+<li>RDS クエリエディタ</li>
+<li>ブルー/グリーンデプロイメント</li>
+<li>データベースアクティビティストリーム（Database Activity Streams）</li>
+<li>Zero Downtime Patching（ZDP）</li>
+<li>Babelfish</li>
+</ul>
+<h3>その他の注意事項</h3>
+<ul>
+<li><strong>Data API</strong>：作成後に <code>ModifyDBCluster</code> で有効化可能ですが、マスターユーザー名/パスワードによる認証には非対応（新規ユーザー認証情報が必要）</li>
+<li><strong>インスタンスタイプ</strong>：作成時は Aurora Serverless v2 のみ。作成後に変更可能</li>
+<li><strong>パラメーターグループ</strong>：デフォルトのパラメーターグループのみ。作成後に変更可能</li>
+<li><strong>ストレージ</strong>：作成時は Aurora Standard のみ。作成後に Aurora I/O-Optimized へ変更可能</li>
+<li><strong>フル設定でのみ利用可能な機能</strong>：カスタム KMS キー、特定エンジンバージョンの選択、VPC 関連付けなどは「フル設定で作成」を使用してください</li>
+</ul>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/03/amazon-aurora-postgresql-database/">AWS What&#39;s New: Amazon Aurora PostgreSQL now supports creating and connecting to a database in seconds</a></li>
+<li><a href="https://aws.amazon.com/blogs/aws/announcing-amazon-aurora-postgresql-serverless-database-creation-in-seconds">ローンチブログ: Announcing Amazon Aurora PostgreSQL serverless database creation in seconds</a></li>
+<li><a href="https://docs.aws.amazon.com/AmazonRDS/latest/AuroraUserGuide/CHAP_GettingStartedAurora.AuroraPostgreSQL.ExpressConfig.html">Aurora ドキュメント: Create with express configuration</a></li>
+<li><a href="https://aws.amazon.com/free/">AWS Free Tier</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/03/amazon-aurora-postgresql-database/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 4件</li></ul></div>
+</article>
+<footer>
+<p>Generated by <a href="https://github.com/konoken/update-unpacker">Update Unpacker</a> · 2026/3/25</p>
+</footer>
+</body>
+</html>
