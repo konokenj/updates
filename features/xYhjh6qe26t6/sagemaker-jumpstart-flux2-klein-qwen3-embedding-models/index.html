@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon SageMaker JumpStartにFLUX.2-klein-base-4BとQwen3-Embedding-0.6Bが追加</title>
+<meta name="description" content="SageMaker JumpStartに画像生成モデルFLUX.2-klein-base-4B（Black Forest Labs）とテキスト埋め込みモデルQwen3-Embedding-0.6B（Qwen）が追加。前者は4Bパラメータのコンパクト設計でリアルタイム画像生成を実現し、後者は100言語以上に対応したセマンティック検索・RAGパイプライン構築を支援する。">
+<meta property="og:title" content="Amazon SageMaker JumpStartにFLUX.2-klein-base-4BとQwen3-Embedding-0.6Bが追加">
+<meta property="og:description" content="SageMaker JumpStartに画像生成モデルFLUX.2-klein-base-4B（Black Forest Labs）とテキスト埋め込みモデルQwen3-Embedding-0.6B（Qwen）が追加。前者は4Bパラメータのコンパクト設計でリアルタイム画像生成を実現し、後者は100言語以上に対応したセマンティック検索・RAGパイプライン構築を支援する。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/xYhjh6qe26t6/sagemaker-jumpstart-flux2-klein-qwen3-embedding-models/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/xYhjh6qe26t6/sagemaker-jumpstart-flux2-klein-qwen3-embedding-models/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>Amazon SageMaker JumpStartにFLUX.2-klein-base-4BとQwen3-Embedding-0.6Bが追加</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What's New</span>
+<span> · 2026/5/14</span>
+</div>
+<div class="summary"><strong>要約:</strong> SageMaker JumpStartに画像生成モデルFLUX.2-klein-base-4B（Black Forest Labs）とテキスト埋め込みモデルQwen3-Embedding-0.6B（Qwen）が追加。前者は4Bパラメータのコンパクト設計でリアルタイム画像生成を実現し、後者は100言語以上に対応したセマンティック検索・RAGパイプライン構築を支援する。</div>
+<h2>新機能の背景</h2>
+<p>企業が生成 AI を活用するうえで、「高品質な画像生成」と「高精度なテキスト検索・意味理解」はそれぞれ異なる基盤モデルを必要とします。従来、これらのモデルを AWS 上で利用するには、コンテナのセットアップやインフラの管理など多くの作業が伴いました。また、高性能な画像生成モデルの多くは大規模な GPU を前提とするため、コスト面での障壁もありました。</p>
+<p>一方、多言語環境でのセマンティック検索や RAG（Retrieval-Augmented Generation）パイプラインの構築には、100 言語以上に対応した高精度なテキスト埋め込みモデルが不可欠ですが、品質・速度・対応言語の三拍子そろった選択肢は限られていました。</p>
+<p>Amazon SageMaker JumpStart はこうした課題に対応するため、主要プロバイダーの最先端基盤モデルをカタログへ継続的に追加しています。今回、Black Forest Labs の <strong>FLUX.2-klein-base-4B</strong>（画像生成）と Qwen の <strong>Qwen3-Embedding-0.6B</strong>（テキスト埋め込み）が新たに追加され、クリエイティブ AI アプリケーションとインテリジェント検索システムの構築がより手軽になりました。</p>
+<h2>新機能の概要</h2>
+<h3>FLUX.2-klein-base-4B（画像生成）</h3>
+<p>Black Forest Labs が開発した <strong>FLUX.2-klein-base-4B</strong> は、4B パラメータのコンパクトなアーキテクチャでリアルタイム画像生成とマルチリファレンス編集を実現するモデルです。</p>
+<table>
+<thead>
+<tr>
+<th>特徴</th>
+<th>詳細</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>モデル規模</strong></td>
+<td>4B パラメータのコンパクト設計</td>
+</tr>
+<tr>
+<td><strong>動作環境</strong></td>
+<td>最小 13GB VRAM のコンシューマー向け GPU で動作可能</td>
+</tr>
+<tr>
+<td><strong>主要機能</strong></td>
+<td>リアルタイム画像生成、マルチリファレンス編集</td>
+</tr>
+<tr>
+<td><strong>主なユースケース</strong></td>
+<td>クリエイティブコンテンツパイプライン、商品ビジュアライゼーション、ラピッドプロトタイピング、高品質画像合成</td>
+</tr>
+</tbody></table>
+<p>Stable Diffusion XL など従来の画像生成モデルと比較して、FLUX.2-klein-base-4B はコンパクトな設計でありながら最先端の品質を維持し、<strong>13GB VRAM</strong> という低いハードウェア要件でも動作します。</p>
+<hr>
+<h3>Qwen3-Embedding-0.6B（テキスト埋め込み）</h3>
+<p>Qwen が開発した <strong>Qwen3-Embedding-0.6B</strong> は、100 言語以上に対応した高精度なテキスト埋め込みモデルです。</p>
+<table>
+<thead>
+<tr>
+<th>特徴</th>
+<th>詳細</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>対応言語数</strong></td>
+<td>100 言語以上</td>
+</tr>
+<tr>
+<td><strong>主要機能</strong></td>
+<td>テキスト検索・分類・クラスタリング・バイテキストマイニング</td>
+</tr>
+<tr>
+<td><strong>柔軟性</strong></td>
+<td>可変出力次元、インストラクション対応埋め込み</td>
+</tr>
+<tr>
+<td><strong>主なユースケース</strong></td>
+<td>セマンティック検索システム、RAG パイプライン、多言語ドキュメント検索、大規模テキスト表現生成</td>
+</tr>
+</tbody></table>
+<p>インストラクション対応（instruction-aware）埋め込みと可変出力次元のサポートにより、タスク固有のファインチューニングなしに検索・分類・クラスタリングなど多様なタスクへ適用できます。</p>
+<h2>使い方</h2>
+<h3>① Amazon SageMaker Studio から利用する（GUIベース）</h3>
+<ol>
+<li><strong>SageMaker Studio</strong> を開き、左パネルの <strong>Models</strong> を選択、または <strong>Home</strong> ページの <strong>Explore models</strong> をクリック</li>
+<li>検索バーで <code>FLUX.2-klein-base-4B</code> または <code>Qwen3-Embedding-0.6B</code> を検索</li>
+<li>モデルの詳細カードを開き、右上の <strong>Deploy</strong> ボタンをクリックしてデプロイワークフローを開始</li>
+<li>インスタンスタイプ等を設定し、デプロイが完了したらエンドポイントを通じて推論リクエストを送信</li>
+</ol>
+<h3>② SageMaker Python SDK から利用する（コードベース）</h3>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> sagemaker.jumpstart.model <span class="hljs-keyword">import</span> JumpStartModel
+
+<span class="hljs-comment"># --- FLUX.2-klein-base-4B（画像生成）の例 ---</span>
+image_model = JumpStartModel(model_id=<span class="hljs-string">&quot;&lt;flux2-klein-base-4b-model-id&gt;&quot;</span>)
+image_predictor = image_model.deploy()
+response = image_predictor.predict({<span class="hljs-string">&quot;prompt&quot;</span>: <span class="hljs-string">&quot;a photorealistic mountain landscape at sunset&quot;</span>})
+
+<span class="hljs-comment"># --- Qwen3-Embedding-0.6B（テキスト埋め込み）の例 ---</span>
+embed_model = JumpStartModel(model_id=<span class="hljs-string">&quot;&lt;qwen3-embedding-0.6b-model-id&gt;&quot;</span>)
+embed_predictor = embed_model.deploy()
+embeddings = embed_predictor.predict({<span class="hljs-string">&quot;inputs&quot;</span>: <span class="hljs-string">&quot;検索対象のテキストをここに入力&quot;</span>})
+</code></pre><blockquote>
+<p><strong>モデル ID の確認方法</strong>: SageMaker Studio のカタログページ、または <code>sagemaker</code> SDK の <code>list_jumpstart_models()</code> を使って正確なモデル ID を取得してください。</p>
+</blockquote>
+<h3>③ 他の AWS サービスとの連携例</h3>
+<table>
+<thead>
+<tr>
+<th>連携サービス</th>
+<th>連携内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Amazon OpenSearch Service</strong></td>
+<td>Qwen3-Embedding-0.6B の埋め込みベクトルを格納し、kNN ベクトル検索を構築</td>
+</tr>
+<tr>
+<td><strong>Amazon Bedrock Knowledge Bases</strong></td>
+<td>RAG パイプラインの埋め込みモデルとして Qwen3-Embedding-0.6B を利用</td>
+</tr>
+<tr>
+<td><strong>Amazon S3</strong></td>
+<td>FLUX.2-klein-base-4B で生成した画像の保存先として活用</td>
+</tr>
+<tr>
+<td><strong>AWS Lambda / Amazon ECS</strong></td>
+<td>画像生成・埋め込み生成 API をサーバーレスまたはコンテナ環境から呼び出し</td>
+</tr>
+</tbody></table>
+<h2>注意点</h2>
+<ul>
+<li><strong>ライセンスの必須確認</strong>: FLUX.2-klein-base-4B は Black Forest Labs、Qwen3-Embedding-0.6B は Qwen のライセンス条件が適用されます。商用利用の可否・再配布制限など、利用前に必ずライセンス内容を確認してください。AWS はサードパーティコンテンツのライセンス遵守についてユーザーの責任としています。</li>
+<li><strong>ハードウェア（インスタンス）要件</strong>: FLUX.2-klein-base-4B はローカル環境では最小 13GB VRAM が必要です。SageMaker へのデプロイ時は適切な GPU インスタンスタイプ（例: <code>ml.g5.2xlarge</code> 以上）を選択してください。インスタンスタイプによってコストが大きく異なるため、<a href="https://aws.amazon.com/sagemaker/pricing/">SageMaker 料金ページ</a> を事前に確認することを推奨します。</li>
+<li><strong>モデル ID の正確な確認</strong>: SageMaker JumpStart のモデル ID はバージョンや地域によって異なる場合があります。Studio のカタログまたは SDK のモデル一覧で最新の正確なモデル ID を使用してください。</li>
+<li><strong>リージョン対応状況</strong>: JumpStart の新規追加モデルは、すべての AWS リージョンで同時に利用可能とは限りません。デプロイ予定のリージョンでの可用性を事前に確認してください。</li>
+<li><strong>カタログ変更リスク</strong>: 2026年3月13日以降、JumpStart ではカタログの品質向上のため一部モデルが削除されています。既存のエンドポイントは引き続き動作しますが、カタログは今後も定期的に更新される可能性があります。本番環境では特定モデルへの依存度に注意し、代替モデルの選択肢を把握しておくことを推奨します。</li>
+<li><strong>料金体系</strong>: SageMaker JumpStart 自体の追加料金は発生しませんが、デプロイ先の SageMaker エンドポイント（EC2 インスタンス）の利用時間に対して課金されます。使用しない際はエンドポイントを削除するか、オートスケーリングの設定を行ってください。</li>
+</ul>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/05/image-embeddings-models-on-sagemaker-jumpstart/">AWS What&#39;s New: New models for image generation and text embeddings are now available in Amazon SageMaker JumpStart</a> (2026-05-14)</li>
+<li><a href="https://docs.aws.amazon.com/sagemaker/latest/dg/studio-jumpstart.html">Amazon SageMaker JumpStart pretrained models — 公式ドキュメント</a></li>
+<li><a href="https://docs.aws.amazon.com/sagemaker/latest/dg/jumpstart-foundation-models-use-python-sdk.html">Use foundation models with the SageMaker Python SDK</a></li>
+<li><a href="https://docs.aws.amazon.com/sagemaker/latest/dg/jumpstart-foundation-models-use-python-sdk-model-class.html">Deploy publicly available foundation models with the JumpStartModel class</a></li>
+<li><a href="https://aws.amazon.com/sagemaker/pricing/">Amazon SageMaker 料金</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/05/image-embeddings-models-on-sagemaker-jumpstart/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 1件</li></ul></div>
+</article>
+<footer>
+<p>Generated by <a href="https://github.com/konoken/update-unpacker">Update Unpacker</a> · 2026/5/14</p>
+</footer>
+</body>
+</html>

@@ -1,5 +1,13 @@
 [
   {
+    "id": "xYhjh6qe26t6",
+    "slug": "sagemaker-jumpstart-flux2-klein-qwen3-embedding-models",
+    "title": "Amazon SageMaker JumpStartにFLUX.2-klein-base-4BとQwen3-Embedding-0.6Bが追加",
+    "date": "2026-05-14",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "mScCCJVWuNZq",
     "slug": "aurora-postgresql-express-configuration-serverless",
     "title": "Amazon Aurora PostgreSQLがエクスプレス設定に対応、VPC不要で数秒以内にサーバーレスDBを作成・接続可能に",
