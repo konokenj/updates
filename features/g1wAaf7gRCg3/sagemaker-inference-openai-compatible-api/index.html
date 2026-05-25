@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon SageMaker AIの推論エンドポイントがOpenAI互換APIをサポート</title>
+<meta name="description" content="SageMaker リアルタイム推論エンドポイントがOpenAI互換APIパスを公開。OpenAI SDK・LangChain・Strands AgentsからエンドポイントURLを変更するだけで接続可能に。カスタム統合コードや既存コードの書き直しは不要。vLLM・SGLang DLCおよびカスタムコンテナに対応。">
+<meta property="og:title" content="Amazon SageMaker AIの推論エンドポイントがOpenAI互換APIをサポート">
+<meta property="og:description" content="SageMaker リアルタイム推論エンドポイントがOpenAI互換APIパスを公開。OpenAI SDK・LangChain・Strands AgentsからエンドポイントURLを変更するだけで接続可能に。カスタム統合コードや既存コードの書き直しは不要。vLLM・SGLang DLCおよびカスタムコンテナに対応。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/g1wAaf7gRCg3/sagemaker-inference-openai-compatible-api/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/g1wAaf7gRCg3/sagemaker-inference-openai-compatible-api/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>Amazon SageMaker AIの推論エンドポイントがOpenAI互換APIをサポート</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What's New</span>
+<span> · 2026/5/21</span>
+</div>
+<div class="summary"><strong>要約:</strong> SageMaker リアルタイム推論エンドポイントがOpenAI互換APIパスを公開。OpenAI SDK・LangChain・Strands AgentsからエンドポイントURLを変更するだけで接続可能に。カスタム統合コードや既存コードの書き直しは不要。vLLM・SGLang DLCおよびカスタムコンテナに対応。</div>
+<h2>新機能の背景</h2>
+<p>AIアプリケーションの多くは、OpenAI SDK・LangChain・Strands Agents といったフレームワークを前提に構築されています。これらは OpenAI 互換の API 仕様を標準インターフェースとして採用しているため、従来 SageMaker のエンドポイントを利用するには、独自の API フォーマットへの対応・AWS SigV4 署名ラッパーの実装・既存コードの大幅な書き直しが避けられませんでした。</p>
+<p>このような統合コストが、既存の OpenAI ベースのアプリケーションを SageMaker へ移行する際の大きな障壁となっていました。今回のアップデートはその障壁を取り除くことを目的としており、エンドポイント URL を変更するだけで、すでに動作している OpenAI 互換のコードをそのまま SageMaker エンドポイントに向けることができるようになります。</p>
+<h2>新機能の概要</h2>
+<p>Amazon SageMaker AI のリアルタイム推論エンドポイントが、OpenAI 互換の API パス（<code>/openai/v1/chat/completions</code>）を公開するようになりました。主な特徴は以下のとおりです。</p>
+<h3>エンドポイント URL の変更のみで移行完了</h3>
+<p>OpenAI SDK・LangChain・Strands Agents などのフレームワークに対して、追加のカスタムクライアント実装・コード書き直しが不要です。SDK 呼び出し・ストリーミングロジック・フレームワーク連携はすべてそのまま動作します。認証もエンドポイント URL の変更以外は変更不要です。</p>
+<h3>ベアラートークン認証</h3>
+<p>SageMaker Python SDK に含まれる <code>generate_token</code> 関数を使い、既存の AWS 認証情報から短命なベアラートークン（最大 12 時間有効）を生成します。追加の API キーや秘密情報の管理は不要です。トークン生成はローカルで完結するクライアントサイド処理（SigV4 プリサイン URL の Base64 エンコード）であり、ネットワーク呼び出しは発生しません。</p>
+<h3>単一モデルエンドポイントと推論コンポーネントの両方に対応</h3>
+<table>
+<thead>
+<tr>
+<th>方式</th>
+<th>概要</th>
+<th>URL パターン</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>単一モデルエンドポイント</td>
+<td>1 エンドポイント = 1 モデル</td>
+<td><code>.../endpoints/&lt;NAME&gt;/openai/v1</code></td>
+</tr>
+<tr>
+<td>推論コンポーネント</td>
+<td>1 エンドポイントに複数モデルをホスト、モデルごとに独立したリソース割り当て</td>
+<td><code>.../endpoints/&lt;NAME&gt;/inference-components/&lt;IC_NAME&gt;/openai/v1</code></td>
+</tr>
+</tbody></table>
+<h3>対応コンテナ</h3>
+<table>
+<thead>
+<tr>
+<th>コンテナ</th>
+<th>サポート状況</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SageMaker AI vLLM Deep Learning Container</td>
+<td>✅ サポート</td>
+</tr>
+<tr>
+<td>SageMaker AI SGLang Deep Learning Container</td>
+<td>✅ サポート</td>
+</tr>
+<tr>
+<td><code>/v1/chat/completions</code> と <code>/ping</code> を実装したカスタムコンテナ</td>
+<td>✅ サポート</td>
+</tr>
+</tbody></table>
+<h3>提供リージョン（2026 年 5 月 21 日時点）</h3>
+<p>米国東部（バージニア北部）、米国西部（オレゴン）、米国東部（オハイオ）、アジアパシフィック（ムンバイ）、アジアパシフィック（ジャカルタ）、欧州（アイルランド）、欧州（フランクフルト）、南米（サンパウロ）、アジアパシフィック（東京）、アジアパシフィック（ソウル）、欧州（ロンドン）、アジアパシフィック（シンガポール）、アジアパシフィック（シドニー）、カナダ（中部）</p>
+<h2>使い方</h2>
+<h3>ステップ 1: 必要なパッケージのインストール</h3>
+<pre><code class="hljs language-bash">pip install sagemaker openai
+</code></pre><h3>ステップ 2: IAM パーミッションの設定</h3>
+<p>エンドポイントを呼び出す IAM ロール／ユーザーに以下のポリシーをアタッチします。<code>sagemaker:InvokeEndpoint</code> は特定のエンドポイント ARN に絞り込むことが推奨されます。</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;Version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2012-10-17&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;Statement&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+        <span class="hljs-punctuation">{</span>
+            <span class="hljs-attr">&quot;Effect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Allow&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;Action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;sagemaker:InvokeEndpoint&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;Resource&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;arn:aws:sagemaker:&lt;REGION&gt;:&lt;ACCOUNT_ID&gt;:endpoint/&lt;ENDPOINT_NAME&gt;&quot;</span>
+        <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-punctuation">{</span>
+            <span class="hljs-attr">&quot;Effect&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Allow&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;Action&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;sagemaker:CallWithBearerToken&quot;</span><span class="hljs-punctuation">,</span>
+            <span class="hljs-attr">&quot;Resource&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;*&quot;</span>
+        <span class="hljs-punctuation">}</span>
+    <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre><h3>ステップ 3: ベアラートークンの生成</h3>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> sagemaker.core.token_generator <span class="hljs-keyword">import</span> generate_token
+<span class="hljs-keyword">from</span> datetime <span class="hljs-keyword">import</span> timedelta
+
+<span class="hljs-comment"># デフォルトは 12 時間有効。expiry で上書き可能（1 秒〜12 時間）</span>
+token = generate_token(region=<span class="hljs-string">&quot;ap-northeast-1&quot;</span>, expiry=timedelta(minutes=<span class="hljs-number">5</span>))
+</code></pre><p>長時間稼働するアプリケーションには、リクエストごとに新しいトークンを自動生成する <code>httpx.Auth</code> パターンが推奨されます。</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">import</span> httpx
+<span class="hljs-keyword">from</span> sagemaker.core.token_generator <span class="hljs-keyword">import</span> generate_token
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">SageMakerAuth</span>(httpx.Auth):
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">__init__</span>(<span class="hljs-params">self, region: <span class="hljs-built_in">str</span></span>):
+        <span class="hljs-variable language_">self</span>.region = region
+
+    <span class="hljs-keyword">def</span> <span class="hljs-title function_">auth_flow</span>(<span class="hljs-params">self, request</span>):
+        request.headers[<span class="hljs-string">&quot;Authorization&quot;</span>] = <span class="hljs-string">f&quot;Bearer <span class="hljs-subst">{generate_token(region=self.region)}</span>&quot;</span>
+        <span class="hljs-keyword">yield</span> request
+
+http_client = httpx.Client(auth=SageMakerAuth(region=<span class="hljs-string">&quot;ap-northeast-1&quot;</span>))
+</code></pre><h3>ステップ 4-A: 単一モデルエンドポイントを OpenAI SDK で呼び出す</h3>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> openai <span class="hljs-keyword">import</span> OpenAI
+<span class="hljs-keyword">from</span> sagemaker.core.token_generator <span class="hljs-keyword">import</span> generate_token
+
+REGION = <span class="hljs-string">&quot;ap-northeast-1&quot;</span>
+ENDPOINT_NAME = <span class="hljs-string">&quot;&lt;your-endpoint-name&gt;&quot;</span>
+
+client = OpenAI(
+    base_url=<span class="hljs-string">f&quot;https://runtime.sagemaker.<span class="hljs-subst">{REGION}</span>.amazonaws.com/endpoints/<span class="hljs-subst">{ENDPOINT_NAME}</span>/openai/v1&quot;</span>,
+    api_key=generate_token(region=REGION),
+)
+
+<span class="hljs-comment"># ストリーミング呼び出しの例</span>
+stream = client.chat.completions.create(
+    model=<span class="hljs-string">&quot;&quot;</span>,   <span class="hljs-comment"># SageMaker はエンドポイント名で routing するため空でも可</span>
+    messages=[
+        {<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;system&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;You are a helpful assistant.&quot;</span>},
+        {<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;トランスフォーマーの仕組みを3文で説明してください。&quot;</span>},
+    ],
+    stream=<span class="hljs-literal">True</span>,
+)
+<span class="hljs-keyword">for</span> chunk <span class="hljs-keyword">in</span> stream:
+    <span class="hljs-keyword">if</span> chunk.choices[<span class="hljs-number">0</span>].delta.content:
+        <span class="hljs-built_in">print</span>(chunk.choices[<span class="hljs-number">0</span>].delta.content, end=<span class="hljs-string">&quot;&quot;</span>)
+</code></pre><h3>ステップ 4-B: 推論コンポーネント（複数モデルホスティング）を呼び出す</h3>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> openai <span class="hljs-keyword">import</span> OpenAI
+<span class="hljs-keyword">from</span> sagemaker.core.token_generator <span class="hljs-keyword">import</span> generate_token
+<span class="hljs-keyword">import</span> httpx
+
+REGION = <span class="hljs-string">&quot;ap-northeast-1&quot;</span>
+IC_ENDPOINT_NAME = <span class="hljs-string">&quot;&lt;your-ic-endpoint-name&gt;&quot;</span>
+IC_NAME = <span class="hljs-string">&quot;&lt;your-inference-component-name&gt;&quot;</span>
+
+shared_http = httpx.Client()   <span class="hljs-comment"># 複数クライアントで TLS セッションを共用</span>
+
+client = OpenAI(
+    base_url=(
+        <span class="hljs-string">f&quot;https://runtime.sagemaker.<span class="hljs-subst">{REGION}</span>.amazonaws.com&quot;</span>
+        <span class="hljs-string">f&quot;/endpoints/<span class="hljs-subst">{IC_ENDPOINT_NAME}</span>/inference-components/<span class="hljs-subst">{IC_NAME}</span>/openai/v1&quot;</span>
+    ),
+    api_key=generate_token(region=REGION),
+    http_client=shared_http,
+)
+
+response = client.chat.completions.create(
+    model=<span class="hljs-string">&quot;&quot;</span>,
+    messages=[{<span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>, <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;42 × 3 は？&quot;</span>}],
+)
+<span class="hljs-built_in">print</span>(response.choices[<span class="hljs-number">0</span>].message.content)
+</code></pre><h3>ステップ 4-C: Strands Agents との統合</h3>
+<p>SageMaker エンドポイントをバックエンドに使ったエージェントをそのまま構築できます。</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">from</span> openai <span class="hljs-keyword">import</span> AsyncOpenAI
+<span class="hljs-keyword">from</span> strands <span class="hljs-keyword">import</span> Agent, tool
+<span class="hljs-keyword">from</span> strands.models.openai <span class="hljs-keyword">import</span> OpenAIModel
+<span class="hljs-keyword">from</span> sagemaker.core.token_generator <span class="hljs-keyword">import</span> generate_token
+
+REGION = <span class="hljs-string">&quot;ap-northeast-1&quot;</span>
+ENDPOINT_NAME = <span class="hljs-string">&quot;&lt;your-endpoint-name&gt;&quot;</span>
+
+<span class="hljs-meta">@tool</span>
+<span class="hljs-keyword">def</span> <span class="hljs-title function_">calculator</span>(<span class="hljs-params">expression: <span class="hljs-built_in">str</span></span>) -&gt; <span class="hljs-built_in">str</span>:
+    <span class="hljs-string">&quot;&quot;&quot;数式を評価して結果を返す&quot;&quot;&quot;</span>
+    <span class="hljs-keyword">return</span> <span class="hljs-built_in">str</span>(<span class="hljs-built_in">eval</span>(expression))
+
+strands_client = AsyncOpenAI(
+    base_url=<span class="hljs-string">f&quot;https://runtime.sagemaker.<span class="hljs-subst">{REGION}</span>.amazonaws.com/endpoints/<span class="hljs-subst">{ENDPOINT_NAME}</span>/openai/v1&quot;</span>,
+    api_key=generate_token(region=REGION),
+)
+
+model = OpenAIModel(client=strands_client, model_id=<span class="hljs-string">&quot;&quot;</span>, params={<span class="hljs-string">&quot;temperature&quot;</span>: <span class="hljs-number">0.7</span>})
+
+agent = Agent(
+    model=model,
+    system_prompt=<span class="hljs-string">&quot;You are a helpful assistant.&quot;</span>,
+    tools=[calculator],
+)
+</code></pre><h3>使い終わったらリソースを削除する</h3>
+<p>SageMaker AI エンドポイントはサービス中は継続して課金されます。不要になったら必ず削除してください。</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">import</span> boto3
+sagemaker_client = boto3.client(<span class="hljs-string">&quot;sagemaker&quot;</span>, region_name=<span class="hljs-string">&quot;ap-northeast-1&quot;</span>)
+
+sagemaker_client.delete_inference_component(InferenceComponentName=<span class="hljs-string">&quot;&lt;IC_NAME&gt;&quot;</span>)
+sagemaker_client.delete_endpoint(EndpointName=<span class="hljs-string">&quot;&lt;ENDPOINT_NAME&gt;&quot;</span>)
+sagemaker_client.delete_endpoint_config(EndpointConfigName=<span class="hljs-string">&quot;&lt;ENDPOINT_CONFIG_NAME&gt;&quot;</span>)
+sagemaker_client.delete_model(ModelName=<span class="hljs-string">&quot;&lt;MODEL_NAME&gt;&quot;</span>)
+</code></pre><h2>注意点</h2>
+<h3>💰 エンドポイントの課金</h3>
+<p>SageMaker AI エンドポイントは、<code>InService</code> 状態である限りトラフィックの有無にかかわらず料金が発生します。検証・テスト後は速やかに推論コンポーネント→エンドポイント→エンドポイント設定→モデルの順に削除してください。</p>
+<h3>🔐 ベアラートークンのセキュリティ</h3>
+<p>ベアラートークンは生成に使用した AWS 認証情報と同等の権限を保持します。以下の点に注意してください。</p>
+<ul>
+<li><strong>保存禁止</strong>: ディスク・環境変数・設定ファイル・データベース・分散キャッシュへの保存を避ける</li>
+<li><strong>ログ出力禁止</strong>: トークン文字列をログに記録しない</li>
+<li><strong>送信は HTTPS のみ</strong>: 暗号化された通信経路でのみ送信する</li>
+<li><strong>使用時に生成</strong>: トークン生成はネットワーク呼び出しが不要なローカル処理のため、保存せず使用直前に毎回生成するか、<code>httpx.Auth</code> の自動更新パターンを利用する</li>
+<li><strong>有効期限を最短に</strong>: ワークロードが必要とする最短の <code>expiry</code> を設定する</li>
+</ul>
+<h3>🔒 IAM ポリシーのスコープを最小化する</h3>
+<ul>
+<li><code>sagemaker:InvokeEndpoint</code> は呼び出すエンドポイントの ARN のみに制限する（ワイルドカード <code>*</code> は使用しない）</li>
+<li><code>AdministratorAccess</code> や <code>AmazonSageMakerFullAccess</code> のような広範なポリシーを持つロールからはトークンを生成しない</li>
+<li><code>sagemaker:CallWithBearerToken</code> はリソースレベルの制限をサポートしていないため、<code>Resource: &quot;*&quot;</code> の指定が必須となる（これは仕様上の制約）</li>
+</ul>
+<h3>⚙️ <code>model</code> フィールドの扱い</h3>
+<p>SageMaker はリクエストの routing を URL 内のエンドポイント名で行います。そのため <code>model</code> フィールドはコンテナがそのまま受け取るパラメータであり、空文字列（<code>&quot;&quot;</code>）のままか、コンテナが期待するモデル名を設定します。OpenAI API の厳密な <code>model</code> 検証は行われません。</p>
+<h3>📦 対応コンテナの要件</h3>
+<p>OpenAI 互換 API を利用するには、コンテナが <code>/v1/chat/completions</code> パスと SSE 形式のストリーミングレスポンス、および <code>/ping</code> ヘルスチェックエンドポイントを実装している必要があります。SageMaker の標準 vLLM・SGLang DLC はすべて対応済みです。</p>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/05/amazon-sagemaker-ai-openai-apis/">AWS What&#39;s New: Amazon SageMaker AI now supports OpenAI-compatible APIs for inference endpoints</a></li>
+<li><a href="https://docs.aws.amazon.com/sagemaker/latest/dg/realtime-endpoints-openai-compatible.html">Amazon SageMaker AI Developer Guide: Invoke endpoints with OpenAI-compatible APIs</a></li>
+<li><a href="https://aws.amazon.com/blogs/machine-learning/announcing-openai-compatible-api-support-for-amazon-sagemaker-ai-endpoints/">AWS Machine Learning Blog: Announcing OpenAI-compatible API support for Amazon SageMaker AI endpoints</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/05/amazon-sagemaker-ai-openai-apis/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 2件</li></ul></div>
+</article>
+<footer>
+<p>Generated by <a href="https://github.com/konoken/update-unpacker">Update Unpacker</a> · 2026/5/21</p>
+</footer>
+</body>
+</html>

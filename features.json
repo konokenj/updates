@@ -1,5 +1,13 @@
 [
   {
+    "id": "g1wAaf7gRCg3",
+    "slug": "sagemaker-inference-openai-compatible-api",
+    "title": "Amazon SageMaker AIの推論エンドポイントがOpenAI互換APIをサポート",
+    "date": "2026-05-21",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "xYhjh6qe26t6",
     "slug": "sagemaker-jumpstart-flux2-klein-qwen3-embedding-models",
     "title": "Amazon SageMaker JumpStartにFLUX.2-klein-base-4BとQwen3-Embedding-0.6Bが追加",
