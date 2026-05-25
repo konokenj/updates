@@ -16,6 +16,14 @@
     "sourceName": "AWS What's New"
   },
   {
+    "id": "lqyq2NvOTJg6",
+    "slug": "bedrock-iam-principal-cost-allocation-cur2",
+    "title": "Amazon BedrockがIAMユーザー・ロール別コスト配分をサポート、CUR 2.0とCost Explorerで推論コストの帰属が可能に",
+    "date": "2026-04-09",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "mScCCJVWuNZq",
     "slug": "aurora-postgresql-express-configuration-serverless",
     "title": "Amazon Aurora PostgreSQLがエクスプレス設定に対応、VPC不要で数秒以内にサーバーレスDBを作成・接続可能に",

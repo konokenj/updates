@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon BedrockがIAMユーザー・ロール別コスト配分をサポート、CUR 2.0とCost Explorerで推論コストの帰属が可能に</title>
+<meta name="description" content="Amazon BedrockのモデルI推論コストを、呼び出し元のIAMプリンシパル（ユーザー・ロール）単位でCUR 2.0およびCost Explorerに自動記録。チーム・プロジェクト・コストセンター別のタグを活用し、CloudTrailとの手動突き合わせなしにBedrockコストのチャージバック・ショーバックを実現。">
+<meta property="og:title" content="Amazon BedrockがIAMユーザー・ロール別コスト配分をサポート、CUR 2.0とCost Explorerで推論コストの帰属が可能に">
+<meta property="og:description" content="Amazon BedrockのモデルI推論コストを、呼び出し元のIAMプリンシパル（ユーザー・ロール）単位でCUR 2.0およびCost Explorerに自動記録。チーム・プロジェクト・コストセンター別のタグを活用し、CloudTrailとの手動突き合わせなしにBedrockコストのチャージバック・ショーバックを実現。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/lqyq2NvOTJg6/bedrock-iam-principal-cost-allocation-cur2/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/lqyq2NvOTJg6/bedrock-iam-principal-cost-allocation-cur2/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>Amazon BedrockがIAMユーザー・ロール別コスト配分をサポート、CUR 2.0とCost Explorerで推論コストの帰属が可能に</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What's New</span>
+<span> · 2026/4/9</span>
+</div>
+<div class="summary"><strong>要約:</strong> Amazon BedrockのモデルI推論コストを、呼び出し元のIAMプリンシパル（ユーザー・ロール）単位でCUR 2.0およびCost Explorerに自動記録。チーム・プロジェクト・コストセンター別のタグを活用し、CloudTrailとの手動突き合わせなしにBedrockコストのチャージバック・ショーバックを実現。</div>
+<h2>新機能の背景</h2>
+<p>生成AIの業務活用が加速する中で、<strong>「誰が Amazon Bedrock のモデル推論コストをどれだけ使っているか」</strong> を把握することは、組織にとってますます重要な課題になっています。</p>
+<p>しかし従来は、Bedrock の推論コストをモデル単位・リージョン単位で確認することはできても、<strong>呼び出し元（IAMユーザーやIAMロール）との紐付けは AWS の請求データに含まれていませんでした</strong>。そのため、チーム・プロジェクト・アプリケーション別にコストを帰属（チャージバック・ショーバック）させるには、以下のような煩雑な手作業が必要でした。</p>
+<ul>
+<li>AWS CloudTrail で Bedrock API の呼び出し履歴を収集</li>
+<li>Amazon CloudWatch ログと突き合わせて呼び出し元を特定</li>
+<li>請求データと手動でマージしてコストを計算</li>
+</ul>
+<p>このプロセスは運用負荷が高く、リアルタイム性にも欠けていました。今回のリリースにより、<strong>既存の AWS コスト管理ツール（Cost Explorer・CUR 2.0）だけで、IAMプリンシパル単位の Bedrock コスト分析が完結する</strong>ようになりました。</p>
+<hr>
+<h2>新機能の概要</h2>
+<p>Amazon Bedrock が <strong>AWS Cost and Usage Report 2.0（CUR 2.0）</strong> および <strong>AWS Cost Explorer</strong> において、IAMプリンシパル（IAMユーザー・IAMロール）単位のコスト配分をサポートしました。（2026年4月9日リリース、全 AWS 商用リージョンで利用可能）</p>
+<h3>追加された主な機能</h3>
+<table>
+<thead>
+<tr>
+<th>機能</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>CUR 2.0 新列 <code>line_item_iam_principal</code></strong></td>
+<td>Bedrock API を呼び出した IAM プリンシパルの ARN が行ごとに自動記録される</td>
+</tr>
+<tr>
+<td><strong>IAMプリンシパルタグのコスト配分</strong></td>
+<td>IAM ユーザー・ロールに付けたタグ（<code>team</code>・<code>project</code>・<code>cost-center</code> 等）を Cost Explorer や CUR 2.0 でコスト分析軸として利用できる</td>
+</tr>
+<tr>
+<td><strong>Cost Explorer でのグループ化・フィルタリング</strong></td>
+<td>IAMプリンシパルタグ値ごとにコストを集計・絞り込みできる</td>
+</tr>
+</tbody></table>
+<h3><code>line_item_iam_principal</code> 列の値の形式</h3>
+<p>CUR 2.0 に追加される新列には、以下のような IAM ARN が格納されます。</p>
+<table>
+<thead>
+<tr>
+<th>ARN の例</th>
+<th>呼び出し元の種別</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>arn:aws:iam::123456789012:user/alice</code></td>
+<td>IAM ユーザー</td>
+</tr>
+<tr>
+<td><code>arn:aws:iam::123456789012:role/app-role</code></td>
+<td>IAM ロール</td>
+</tr>
+<tr>
+<td><code>arn:aws:sts::123456789012:assumed-role/app-role/session-name</code></td>
+<td>AssumeRole セッション</td>
+</tr>
+</tbody></table>
+<h3>CUR 2.0 のタグ列プレフィックス</h3>
+<p>IAMプリンシパルタグは、他のタグ種別（リソースタグ・アカウントタグ等）と区別するために <strong><code>iamPrincipal/</code></strong> というプレフィックスが自動付与されます。</p>
+<pre><code class="hljs">iamPrincipal/department  → 部門タグ
+iamPrincipal/cost-center → コストセンタータグ
+iamPrincipal/team        → チームタグ
+iamPrincipal/project     → プロジェクトタグ
+</code></pre><hr>
+<h2>仕組み</h2>
+<p>CUR 2.0 でIAMプリンシパルデータを有効化すると、AWS は <strong>Bedrock API が呼び出されるたびに</strong>、その呼び出し元の IAM プリンシパル ARN を <code>line_item_iam_principal</code> 列に自動記録します。</p>
+<p>さらに IAM プリンシパルにタグが設定されていれば、そのタグも CUR 2.0 のタグ列に自動的に取り込まれます。これにより、<strong>CloudTrail や CloudWatch との手動突き合わせなしに</strong>、組織の階層構造（チーム・プロジェクト・コストセンター）に沿ったコスト可視化が実現します。</p>
+<pre><code class="hljs">Bedrock API 呼び出し
+    └─ 呼び出し元 IAM ARN → line_item_iam_principal 列に記録
+    └─ IAM プリンシパルのタグ → iamPrincipal/&lt;タグキー&gt; 列に記録
+           ↓
+    CUR 2.0 / Cost Explorer で集計・分析
+</code></pre><hr>
+<h2>利用開始手順</h2>
+<h3>ステップ 1：IAMコンソールでプリンシパルにタグを付与する</h3>
+<ol>
+<li><a href="https://console.aws.amazon.com/iam/">IAM コンソール</a> を開く</li>
+<li>Bedrock API を呼び出す IAM ユーザーまたはロールを選択する</li>
+<li>組織構造を表すタグを付与する</li>
+</ol>
+<pre><code class="hljs">推奨タグキーの例：
+  department  （部門）
+  cost-center （コストセンター）
+  team        （チーム）
+  project     （プロジェクト）
+  environment （環境：prod / dev / staging）
+</code></pre><blockquote>
+<p><strong>注意：</strong> Bedrock では、タグが付いた IAM プリンシパルが <strong>少なくとも 1 回 Bedrock API を呼び出した後</strong> でないと、コスト配分タグページにそのタグが表示されません。</p>
+</blockquote>
+<hr>
+<h3>ステップ 2：コスト配分タグとして有効化する</h3>
+<ol>
+<li><a href="https://console.aws.amazon.com/costmanagement/">Billing and Cost Management コンソール</a> を開く</li>
+<li>左ナビゲーションペインの <strong>「コスト組織」→「コスト配分タグ」</strong> を選択する</li>
+<li>フィルターで <strong>「IAM プリンシパル」</strong> タイプを選択する</li>
+<li>有効化したいタグキーを選択し、<strong>「有効化」</strong> をクリックする</li>
+<li>ステータスが <strong>「アクティブ」</strong> になるまで待つ（最大 24 時間）</li>
+</ol>
+<blockquote>
+<p><strong>注意：</strong> タグ付与後にコスト配分タグページへ表示されるまで最大 24 時間、その後アクティブになるまでさらに最大 24 時間かかります（合計最大 48 時間）。</p>
+</blockquote>
+<hr>
+<h3>ステップ 3：CUR 2.0 でIAMプリンシパルデータを有効化する</h3>
+<ol>
+<li>Billing and Cost Management コンソールの <strong>「データエクスポート」</strong> を開く</li>
+<li><strong>「新しいエクスポートを作成」</strong> で <strong>「Standard data export（CUR 2.0）」</strong> を選択する</li>
+<li><strong>「追加のエクスポートコンテンツ」</strong> の中から <strong>「呼び出し元 ID（IAMプリンシパル）の配分データを含める」</strong> を選択する</li>
+<li>設定を保存する</li>
+</ol>
+<p>これにより <code>line_item_iam_principal</code> 列と IAMプリンシパルタグ列が CUR 2.0 エクスポートに追加されます。</p>
+<hr>
+<h3>ステップ 4：Cost Explorer / CUR 2.0 でコストを分析する</h3>
+<p><strong>Cost Explorer でタグ別に集計する場合：</strong></p>
+<ol>
+<li>Cost Explorer を開く</li>
+<li><strong>「グループ化」</strong> ドロップダウンから <strong>「タグ」</strong> を選択する</li>
+<li>有効化した IAMプリンシパルタグ（例：<code>iamPrincipal/department</code>）を選択する</li>
+<li>タグ値ごとに集計されたコストを確認する</li>
+</ol>
+<p><strong>Cost Explorer でタグ別にフィルタリングする場合：</strong></p>
+<ol>
+<li>Cost Explorer の <strong>「フィルタ」</strong> セクションで <strong>「タグ」</strong> を選択する</li>
+<li>有効化した IAMプリンシパルタグと値を指定して絞り込む</li>
+</ol>
+<p><strong>CUR 2.0 で分析する場合：</strong></p>
+<ul>
+<li><code>line_item_iam_principal</code> 列：Bedrock API を呼び出した IAM ARN を確認</li>
+<li><code>resource_tags_iamPrincipal_department</code> 等：IAMプリンシパルタグ別のコストを確認</li>
+</ul>
+<hr>
+<h2>注意事項</h2>
+<h3>⏱ タグ反映には最大 48 時間かかる</h3>
+<p>IAM プリンシパルへのタグ付与 → コスト配分タグページへの表示まで <strong>最大 24 時間</strong>、さらにアクティブ化まで <strong>最大 24 時間</strong> かかります。設定直後に Cost Explorer や CUR 2.0 に反映されない場合は仕様通りです。</p>
+<h3>🔑 タグ表示の前提：1回以上の Bedrock API 呼び出しが必要</h3>
+<p>Amazon Bedrock 特有の挙動として、<strong>IAM プリンシパルが少なくとも 1 回 Bedrock API を呼び出した後</strong> でないと、コスト配分タグとして有効化できる状態になりません。IAM ユーザー・ロール・AssumeRole セッションすべてに適用されます。</p>
+<h3>📦 CUR ファイルサイズの増大に注意</h3>
+<p>IAMプリンシパルデータを有効化すると、CUR 2.0 の行数が <strong>呼び出し元 IAMプリンシパルの種類数に比例して増加</strong> します。出力先 S3 バケットのストレージコストと、Athena・QuickSight 等でのデータ処理コストへの影響を事前に試算することを推奨します。</p>
+<h3>🏷 高カーディナリティタグは避ける</h3>
+<p>タグ値の種類が多すぎるタグキー（ユニークなセッション ID・タイムスタンプ・ランダムな GUID など）はコスト分析の粒度が過剰になるため推奨されません。組織構造を反映した意味のある、低カーディナリティのタグ設計を心がけてください。</p>
+<table>
+<thead>
+<tr>
+<th>推奨するタグ設計</th>
+<th>避けるべきタグ設計</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>team: data-science</code>（チーム名）</td>
+<td><code>session-id: abc123xyz...</code>（一意のID）</td>
+</tr>
+<tr>
+<td><code>cost-center: cc-1234</code>（コストセンターコード）</td>
+<td><code>timestamp: 2026-04-09T12:00:00Z</code>（タイムスタンプ）</td>
+</tr>
+<tr>
+<td><code>environment: production</code>（環境名）</td>
+<td><code>request-id: f8a2b...</code>（リクエストID）</td>
+</tr>
+</tbody></table>
+<h3>🔄 CUR 2.0（Standard data export）が前提条件</h3>
+<p>この機能は <strong>CUR 2.0</strong> でのみ利用できます。旧来の CUR（Legacy CUR）には対応していません。まだ移行していない場合は、Billing and Cost Management コンソールから CUR 2.0 に移行が必要です。</p>
+<h3>📊 既存の Bedrock リソースタグとの使い分け</h3>
+<p>従来のリソースタグは「モデル・エンドポイント単位（何を使ったか）」の分析に向いています。IAMプリンシパルタグは「呼び出し元単位（誰が使ったか）」の分析に特化しています。両者を組み合わせることで、「<strong>どのチームが・どのモデルを・いくら使ったか</strong>」という多軸のコスト分析が可能になります。</p>
+<hr>
+<h2>まとめ</h2>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>リリース日</strong></td>
+<td>2026年4月9日</td>
+</tr>
+<tr>
+<td><strong>対応リージョン</strong></td>
+<td>Amazon Bedrock が利用可能な全 AWS 商用リージョン</td>
+</tr>
+<tr>
+<td><strong>対応ツール</strong></td>
+<td>AWS Cost Explorer、AWS Cost and Usage Report 2.0（CUR 2.0）</td>
+</tr>
+<tr>
+<td><strong>必要な設定</strong></td>
+<td>IAMタグ付与 → コスト配分タグ有効化 → CUR 2.0 でオプション有効化</td>
+</tr>
+<tr>
+<td><strong>追加コスト</strong></td>
+<td>CUR 2.0 のデータ量増加に伴う S3 ストレージコストが発生する可能性あり</td>
+</tr>
+<tr>
+<td><strong>追加ツール</strong></td>
+<td>不要（既存の AWS コスト管理ツールに統合）</td>
+</tr>
+</tbody></table>
+<p>この機能により、組織全体の生成AI活用コストを透明化し、チーム・プロジェクトへの正確なコスト帰属、AIリソース計画の最適化、コスト削減機会の発見が既存ワークフロー内で実現できるようになります。</p>
+<hr>
+<h2>参考リンク</h2>
+<ul>
+<li>AWS What&#39;s New（リリースアナウンス）: <a href="https://aws.amazon.com/about-aws/whats-new/2026/04/bedrock-iam-cost-allocation/">https://aws.amazon.com/about-aws/whats-new/2026/04/bedrock-iam-cost-allocation/</a></li>
+<li>IAMプリンシパルによるコスト配分 ドキュメント: <a href="https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/iam-principal-cost-allocation.html">https://docs.aws.amazon.com/awsaccountbilling/latest/aboutv2/iam-principal-cost-allocation.html</a></li>
+<li>Amazon Bedrock はじめに ドキュメント: <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started.html">https://docs.aws.amazon.com/bedrock/latest/userguide/getting-started.html</a></li>
+<li>CUR 2.0 タグ列ドキュメント: <a href="https://docs.aws.amazon.com/cur/latest/userguide/table-dictionary-cur2-tag-columns.html">https://docs.aws.amazon.com/cur/latest/userguide/table-dictionary-cur2-tag-columns.html</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/04/bedrock-iam-cost-allocation/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 2件</li></ul></div>
+</article>
+<footer>
+<p>Generated by <a href="https://github.com/konoken/update-unpacker">Update Unpacker</a> · 2026/4/9</p>
+</footer>
+</body>
+</html>
