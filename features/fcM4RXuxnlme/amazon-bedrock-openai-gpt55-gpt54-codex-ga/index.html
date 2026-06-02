@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>OpenAIのGPT-5.5・GPT-5.4・CodexがAmazon Bedrockで一般提供開始</title>
+<meta name="description" content="GPT-5.5・GPT-5.4・CodexがAmazon Bedrockで本番利用可能（GA）に。IAM・PrivateLink・KMS・CloudTrailなど既存のAWSガバナンス統制をそのまま適用でき、プロンプトはOpenAIへ共有されない。料金はOpenAI直接利用と同一で追加手数料なし。CodexはVS Code・JetBrainsなどIDEから利用可能。">
+<meta property="og:title" content="OpenAIのGPT-5.5・GPT-5.4・CodexがAmazon Bedrockで一般提供開始">
+<meta property="og:description" content="GPT-5.5・GPT-5.4・CodexがAmazon Bedrockで本番利用可能（GA）に。IAM・PrivateLink・KMS・CloudTrailなど既存のAWSガバナンス統制をそのまま適用でき、プロンプトはOpenAIへ共有されない。料金はOpenAI直接利用と同一で追加手数料なし。CodexはVS Code・JetBrainsなどIDEから利用可能。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/fcM4RXuxnlme/amazon-bedrock-openai-gpt55-gpt54-codex-ga/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/fcM4RXuxnlme/amazon-bedrock-openai-gpt55-gpt54-codex-ga/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>OpenAIのGPT-5.5・GPT-5.4・CodexがAmazon Bedrockで一般提供開始</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What's New</span>
+<span> · 2026/6/1</span>
+</div>
+<div class="summary"><strong>要約:</strong> GPT-5.5・GPT-5.4・CodexがAmazon Bedrockで本番利用可能（GA）に。IAM・PrivateLink・KMS・CloudTrailなど既存のAWSガバナンス統制をそのまま適用でき、プロンプトはOpenAIへ共有されない。料金はOpenAI直接利用と同一で追加手数料なし。CodexはVS Code・JetBrainsなどIDEから利用可能。</div>
+<h2>新機能の背景</h2>
+<p>AWS と OpenAI は 2026 年 5 月に拡大パートナーシップを発表し、その約 1 ヶ月後に GPT-5.5・GPT-5.4・Codex が Amazon Bedrock 上で一般利用可能（GA）となりました。</p>
+<p>企業が OpenAI のフロンティアモデルを活用したいというニーズが高まる一方、IAM・VPC/PrivateLink・KMS 暗号化・AWS CloudTrail による監査ログといった既存の AWS セキュリティ・ガバナンス基盤をそのまま適用したいという要望も増えていました。OpenAI モデルを直接利用する場合、データ主権の確保や企業内ガバナンスポリシーとの整合に課題が生じることがあります。</p>
+<p>Amazon Bedrock が OpenAI モデルの推論基盤となることで、<strong>プロンプトや応答がモデルプロバイダー（OpenAI）に共有されたりモデルのトレーニングに使用されたりすることなく</strong>、既存の AWS ガバナンス統制（IAM 権限管理・PrivateLink 分離・KMS 暗号化・CloudTrail 監査）を OpenAI モデルにもそのまま適用できるようになります。これにより、セキュリティ・コンプライアンス要件の厳しいエンタープライズ環境でも、OpenAI の最先端モデルを安心して本番利用できます。</p>
+<h2>新機能の概要</h2>
+<p>Amazon Bedrock のモデルカタログに、以下の OpenAI モデルが追加されました。</p>
+<h3>利用可能なモデル</h3>
+<table>
+<thead>
+<tr>
+<th>モデル</th>
+<th>概要</th>
+<th>主なユースケース</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>GPT-5.5</strong></td>
+<td>OpenAI 最高性能のフロンティアモデル</td>
+<td>エージェント的コーディング、データ分析、複数ステップの自律タスク</td>
+</tr>
+<tr>
+<td><strong>GPT-5.4</strong></td>
+<td>優れた価格対性能比を持つフロンティアモデル</td>
+<td>複雑なビジネスシステムを横断した推論・ツール利用・コンピュータ操作</td>
+</tr>
+<tr>
+<td><strong>GPT OSS 120B</strong></td>
+<td>1,200 億パラメータのオープンソース汎用モデル</td>
+<td>テキスト生成・コーディング・推論</td>
+</tr>
+<tr>
+<td><strong>GPT OSS 20B</strong></td>
+<td>200 億パラメータの軽量オープンソースモデル</td>
+<td>低コストでの効率的なテキスト生成・コーディング</td>
+</tr>
+<tr>
+<td><strong>GPT OSS Safeguard 120B</strong></td>
+<td>コンテンツモデレーション用セーフティモデル（120B）</td>
+<td>AI アプリのガードレール・コンテンツ審査</td>
+</tr>
+<tr>
+<td><strong>GPT OSS Safeguard 20B</strong></td>
+<td>コンテンツモデレーション用セーフティモデル（20B）</td>
+<td>軽量なコンテンツモデレーション・ガードレールタスク</td>
+</tr>
+</tbody></table>
+<h3>Codex — AI コーディングエージェント</h3>
+<p><strong>Codex</strong> は OpenAI が提供する AI コーディングエージェントで、毎週 500 万人以上の開発者が利用しています。リポジトリ全体にわたってコードの記述・リファクタリング・デバッグ・テスト・検証を行い、複雑なシステム間の依存関係を理解しながら変更を伝播させます。GPT-5.5 で推論を行うことで、従来のモデルバージョンより効率的かつ高品質にタスクを完了します。</p>
+<p>Codex は以下のクライアントから利用でき、<strong>すべての推論を Amazon Bedrock 経由</strong>にルーティング可能です。</p>
+<ul>
+<li><strong>Codex App</strong>（デスクトップアプリ）</li>
+<li><strong>Codex CLI</strong>（コマンドラインツール）</li>
+<li><strong>IDE 統合</strong>：Visual Studio Code・JetBrains・Xcode</li>
+</ul>
+<h3>推論エンジンと料金</h3>
+<ul>
+<li><strong>推論エンジン</strong>：Bedrock の次世代推論エンジン（内部名：Mantle）上で動作。自動キャパシティ管理・耐障害性（リクエスト途中のハードウェア障害からの再開）・分離キューを提供します。</li>
+<li><strong>料金</strong>：OpenAI 直接利用と同一のトークン単価。追加手数料なし。シートライセンスや開発者単位のコミットメント不要。既存の AWS コミットメント（EDP 等）に対して利用量を充当可能。</li>
+<li><strong>API</strong>：OpenAI の <code>Responses</code> API 互換エンドポイント（<code>bedrock-mantle.&lt;region&gt;.api.aws/openai/v1</code>）を通じて呼び出します。</li>
+</ul>
+<h2>使い方</h2>
+<h3>1. GPT-5.5 / GPT-5.4 を Python SDK から呼び出す</h3>
+<p>まず OpenAI Python SDK をインストールします。</p>
+<pre><code class="hljs language-bash">pip install -U openai
+</code></pre><p>Bedrock エンドポイントと API キーを環境変数に設定します（Bedrock API キーは AWS コンソールまたは CLI で発行）。</p>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">export</span> OPENAI_BASE_URL=<span class="hljs-string">&quot;https://bedrock-mantle.us-east-2.api.aws/openai/v1&quot;</span>
+<span class="hljs-built_in">export</span> OPENAI_API_KEY=<span class="hljs-string">&quot;&lt;BEDROCK_API_KEY&gt;&quot;</span>
+<span class="hljs-built_in">export</span> BEDROCK_OPENAI_MODEL_ID=<span class="hljs-string">&quot;openai.gpt-5.5&quot;</span>
+</code></pre><p>OpenAI SDK を使って GPT-5.5 を呼び出すサンプルコードです。</p>
+<pre><code class="hljs language-python"><span class="hljs-keyword">import</span> os
+<span class="hljs-keyword">from</span> openai <span class="hljs-keyword">import</span> OpenAI
+
+client = OpenAI(
+    base_url=os.environ[<span class="hljs-string">&quot;OPENAI_BASE_URL&quot;</span>],
+    api_key=os.environ[<span class="hljs-string">&quot;OPENAI_API_KEY&quot;</span>],
+)
+
+response = client.responses.create(
+    model=os.environ[<span class="hljs-string">&quot;BEDROCK_OPENAI_MODEL_ID&quot;</span>],
+    <span class="hljs-built_in">input</span>=[
+        {
+            <span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;developer&quot;</span>,
+            <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;You are a software engineer with excellent AWS cloud knowledge. Be concise and practical.&quot;</span>,
+        },
+        {
+            <span class="hljs-string">&quot;role&quot;</span>: <span class="hljs-string">&quot;user&quot;</span>,
+            <span class="hljs-string">&quot;content&quot;</span>: <span class="hljs-string">&quot;Design a distributed architecture on AWS that supports 100k requests per second across multiple geographic regions.&quot;</span>,
+        },
+    ],
+    reasoning={<span class="hljs-string">&quot;effort&quot;</span>: <span class="hljs-string">&quot;medium&quot;</span>},
+    text={<span class="hljs-string">&quot;verbosity&quot;</span>: <span class="hljs-string">&quot;low&quot;</span>},
+)
+
+<span class="hljs-built_in">print</span>(response.output_text)
+</code></pre><p><code>curl</code> での呼び出しも可能です。</p>
+<pre><code class="hljs language-bash">curl <span class="hljs-string">&quot;<span class="hljs-variable">$OPENAI_BASE_URL</span>/responses&quot;</span> \
+  -H <span class="hljs-string">&quot;Content-Type: application/json&quot;</span> \
+  -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$OPENAI_API_KEY</span>&quot;</span> \
+  -d <span class="hljs-string">&#x27;{
+    &quot;model&quot;: &quot;openai.gpt-5.5&quot;,
+    &quot;input&quot;: [
+      {
+        &quot;role&quot;: &quot;developer&quot;,
+        &quot;content&quot;: &quot;You are a software engineer with excellent AWS cloud knowledge.&quot;
+      },
+      {
+        &quot;role&quot;: &quot;user&quot;,
+        &quot;content&quot;: &quot;Design a distributed architecture on AWS that supports 100k requests per second.&quot;
+      }
+    ],
+    &quot;reasoning&quot;: {&quot;effort&quot;: &quot;medium&quot;},
+    &quot;text&quot;: {&quot;verbosity&quot;: &quot;low&quot;}
+  }&#x27;</span>
+</code></pre><h3>2. Codex を Amazon Bedrock 経由で使う</h3>
+<p>Codex は <strong>Bedrock API キー</strong>、または <strong>AWS SDK クレデンシャルチェーン</strong> の 2 通りで認証できます。API キーを使う場合は以下のように設定します。</p>
+<p><strong>① 環境変数にAPIキーを設定</strong></p>
+<pre><code class="hljs language-bash"><span class="hljs-built_in">export</span> AWS_BEARER_TOKEN_BEDROCK=&lt;your-bedrock-api-key&gt;
+</code></pre><p><strong>② <code>~/.codex/config.toml</code> でモデルとリージョンを設定</strong></p>
+<pre><code class="hljs language-toml"><span class="hljs-attr">model</span> = <span class="hljs-string">&quot;openai.gpt-5.5&quot;</span>
+<span class="hljs-attr">model_provider</span> = <span class="hljs-string">&quot;amazon-bedrock&quot;</span>
+
+<span class="hljs-section">[model_providers.amazon-bedrock.aws]</span>
+<span class="hljs-attr">region</span> = <span class="hljs-string">&quot;us-east-2&quot;</span>
+</code></pre><p><code>gpt-5.4</code>・<code>gpt-oss-120b</code>・<code>gpt-oss-20b</code> も同様に指定可能です。デスクトップアプリや VS Code 拡張機能は <code>~/.codex/config.toml</code> または <code>~/.codex/.env</code> を変更した後に<strong>再起動</strong>が必要です。</p>
+<blockquote>
+<p><strong>Codex CLI</strong> を使う場合は <code>/status</code> タブで Bedrock 経由の推論が確認できます。</p>
+</blockquote>
+<h2>注意点</h2>
+<ol>
+<li><p><strong>リージョン制限（2026年6月時点）</strong>：GPT-5.5 は<strong>米国東部（オハイオ: <code>us-east-2</code>）のみ</strong>、GPT-5.4 は**米国東部（オハイオ）と米国西部（オレゴン: <code>us-west-2</code>）**で利用可能。今後のリージョン拡大は <a href="https://docs.aws.amazon.com/bedrock/latest/userguide/models-region-compatibility.html">AWS リージョンページ</a> を確認してください。</p>
+</li>
+<li><p><strong>推論レイテンシは設定次第で大きく変わる</strong>：GPT-5.5 は高速・GPT-5.4 は中程度とされますが、実際の体感レイテンシは推論エフォート（<code>reasoning.effort</code>）・出力長・ツールコール数・バックグラウンドモード・リージョン・クォータ・スロットリング・プロンプトサイズ・キャッシュヒットに依存します。</p>
+</li>
+<li><p><strong>推論エフォートの初期値</strong>：GPT-5.5 は <code>medium</code> エフォートから始めることを推奨。GPT-5.4 はデフォルトが <code>none</code> のため、品質を確保するには <code>reasoning={&quot;effort&quot;: &quot;low&quot;}</code> など<strong>明示的にエフォートを指定</strong>することが推奨されます。</p>
+</li>
+<li><p><strong>高負荷時はキューイング</strong>：需要が急増してもリクエストは拒否されずキューに積まれます。既存の安定ワークロードが優先されるため、急激なトラフィックスパイク時は応答が遅延する場合があります。</p>
+</li>
+<li><p><strong>データプライバシーの保証範囲</strong>：プロンプトおよびレスポンスはモデルのトレーニングに使用されず、OpenAI を含むモデルプロバイダーとも共有されません。ただし、AWS サービス全般の利用規約および Bedrock サービス規約の範囲内での保証となります。</p>
+</li>
+<li><p><strong>Codex の認証優先順位</strong>：<code>AWS_BEARER_TOKEN_BEDROCK</code> 環境変数が設定されている場合はそちらが優先され、未設定の場合は AWS SDK クレデンシャルチェーン（<code>~/.aws/credentials</code>、IAM ロール等）にフォールバックします。API キー認証を使う場合は <code>~/.codex/config.toml</code> でのモデル ID 設定が必須です。</p>
+</li>
+</ol>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/06/amazon-bedrock-openai-models-codex-generally-available/">AWS What&#39;s New: GPT-5.5, GPT-5.4, and Codex from OpenAI are now generally available on Amazon Bedrock</a></li>
+<li><a href="https://docs.aws.amazon.com/bedrock/latest/userguide/model-cards-openai.html">Amazon Bedrock ドキュメント: OpenAI モデルカード一覧</a></li>
+<li><a href="https://aws.amazon.com/blogs/machine-learning/openai-models-and-codex-on-amazon-bedrock-are-now-generally-available">ローンチブログ: OpenAI models and Codex on Amazon Bedrock are now generally available</a></li>
+<li><a href="https://aws.amazon.com/blogs/aws/get-started-with-openai-gpt-5-5-gpt-5-4-models-and-codex-on-amazon-bedrock">入門ブログ: Get started with OpenAI GPT-5.5, GPT-5.4 models, and Codex on Amazon Bedrock</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/06/amazon-bedrock-openai-models-codex-generally-available/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 4件</li></ul></div>
+</article>
+<footer>
+<p>Generated by <a href="https://github.com/konoken/update-unpacker">Update Unpacker</a> · 2026/6/1</p>
+</footer>
+</body>
+</html>

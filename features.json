@@ -1,5 +1,13 @@
 [
   {
+    "id": "fcM4RXuxnlme",
+    "slug": "amazon-bedrock-openai-gpt55-gpt54-codex-ga",
+    "title": "OpenAIのGPT-5.5・GPT-5.4・CodexがAmazon Bedrockで一般提供開始",
+    "date": "2026-06-01",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "g1wAaf7gRCg3",
     "slug": "sagemaker-inference-openai-compatible-api",
     "title": "Amazon SageMaker AIの推論エンドポイントがOpenAI互換APIをサポート",
