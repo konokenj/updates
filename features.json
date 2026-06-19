@@ -8,6 +8,14 @@
     "sourceName": "AWS What's New"
   },
   {
+    "id": "uHUXKorRFicD",
+    "slug": "aws-security-agent-threat-modeling",
+    "title": "AWS Security Agent、AIエージェントによる脅威モデリングをパブリックプレビューで提供開始",
+    "date": "2026-06-17",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "fcM4RXuxnlme",
     "slug": "amazon-bedrock-openai-gpt55-gpt54-codex-ga",
     "title": "OpenAIのGPT-5.5・GPT-5.4・CodexがAmazon Bedrockで一般提供開始",
