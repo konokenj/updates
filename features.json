@@ -1,5 +1,13 @@
 [
   {
+    "id": "GVvDhtzrXo66",
+    "slug": "ec2-g7-instances-nvidia-rtx-pro-4500-blackwell-gpu-ga",
+    "title": "Amazon EC2 G7インスタンスが一般提供開始 — NVIDIA RTX PRO 4500 Blackwell GPU搭載でG6比最大4.6倍のAI推論性能を実現",
+    "date": "2026-06-18",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "fcM4RXuxnlme",
     "slug": "amazon-bedrock-openai-gpt55-gpt54-codex-ga",
     "title": "OpenAIのGPT-5.5・GPT-5.4・CodexがAmazon Bedrockで一般提供開始",

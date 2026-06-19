@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon EC2 G7インスタンスが一般提供開始 — NVIDIA RTX PRO 4500 Blackwell GPU搭載でG6比最大4.6倍のAI推論性能を実現</title>
+<meta name="description" content="NVIDIA RTX PRO 4500 Blackwell GPU搭載のEC2 G7インスタンスが一般提供開始。G6比で最大4.6倍のAI推論性能・最大2.1倍のグラフィックス性能を実現。最大700 Gbps EFAネットワーク対応。言語翻訳・動画解析・音声認識・ゲームストリーミングなどのGPUワークロードに最適。">
+<meta property="og:title" content="Amazon EC2 G7インスタンスが一般提供開始 — NVIDIA RTX PRO 4500 Blackwell GPU搭載でG6比最大4.6倍のAI推論性能を実現">
+<meta property="og:description" content="NVIDIA RTX PRO 4500 Blackwell GPU搭載のEC2 G7インスタンスが一般提供開始。G6比で最大4.6倍のAI推論性能・最大2.1倍のグラフィックス性能を実現。最大700 Gbps EFAネットワーク対応。言語翻訳・動画解析・音声認識・ゲームストリーミングなどのGPUワークロードに最適。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/GVvDhtzrXo66/ec2-g7-instances-nvidia-rtx-pro-4500-blackwell-gpu-ga/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/GVvDhtzrXo66/ec2-g7-instances-nvidia-rtx-pro-4500-blackwell-gpu-ga/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>Amazon EC2 G7インスタンスが一般提供開始 — NVIDIA RTX PRO 4500 Blackwell GPU搭載でG6比最大4.6倍のAI推論性能を実現</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What's New</span>
+<span> · 2026/6/18</span>
+</div>
+<div class="summary"><strong>要約:</strong> NVIDIA RTX PRO 4500 Blackwell GPU搭載のEC2 G7インスタンスが一般提供開始。G6比で最大4.6倍のAI推論性能・最大2.1倍のグラフィックス性能を実現。最大700 Gbps EFAネットワーク対応。言語翻訳・動画解析・音声認識・ゲームストリーミングなどのGPUワークロードに最適。</div>
+<h2>新機能の背景</h2>
+<p>生成AIや大規模言語モデル（LLM）の普及に伴い、クラウド上でのAIインファレンス需要が急速に拡大しています。また、リアルタイムグラフィックス・動画解析・空間コンピューティングといったGPU集約型ワークロードも多様化しており、前世代のG6インスタンス（NVIDIA L4 Tensor Core GPU搭載）では対応しきれないケースが増えてきていました。</p>
+<p>G6インスタンスはG4dnと比べ2倍の性能を実現しましたが、5th Gen Tensor Coreや大容量GPU メモリ、超高速EFAネットワーキングへの要求が高まる中、より高い世代のGPUアーキテクチャが必要とされていました。</p>
+<p>今回、AWSは主要クラウドプロバイダーとして<strong>世界初</strong>でNVIDIA RTX PRO 4500 Blackwell Server Edition GPUをサポートし、G7インスタンスとして一般提供を開始しました。G6と比較して最大4.6倍のAIインファレンス性能と最大2.1倍のグラフィックス性能を実現し、次世代のGPUワークロードに対応します。</p>
+<h2>新機能の概要</h2>
+<p>Amazon EC2 G7インスタンスは、<strong>NVIDIA RTX PRO 4500 Blackwell Server Edition GPU</strong>と<strong>カスタムIntel Xeon 6プロセッサ</strong>を搭載した、AIインファレンス・グラフィックス・データ分析ワークロード向けの高性能GPUアクセラレーテッドインスタンスです。</p>
+<h3>G6インスタンスとの主な違い・改善点</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>G6（旧世代）</th>
+<th>G7（新世代）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>GPU</td>
+<td>NVIDIA L4 Tensor Core</td>
+<td>NVIDIA RTX PRO 4500 Blackwell</td>
+</tr>
+<tr>
+<td>GPUメモリ（1基あたり）</td>
+<td>24 GB</td>
+<td>32 GB（<strong>1.33倍</strong>）</td>
+</tr>
+<tr>
+<td>GPUメモリ帯域幅</td>
+<td>—</td>
+<td>G6比 <strong>2.45倍</strong></td>
+</tr>
+<tr>
+<td>AIインファレンス性能</td>
+<td>基準</td>
+<td>最大 <strong>4.6倍</strong></td>
+</tr>
+<tr>
+<td>グラフィックス性能</td>
+<td>基準</td>
+<td>最大 <strong>2.1倍</strong></td>
+</tr>
+<tr>
+<td>ネットワーク帯域幅（最大）</td>
+<td>100 Gbps</td>
+<td><strong>700 Gbps</strong>（EFA対応・7倍）</td>
+</tr>
+<tr>
+<td>ローカルNVMe SSDストレージ</td>
+<td>最大 7.52 TB</td>
+<td>最大 <strong>7.6 TB</strong></td>
+</tr>
+<tr>
+<td>同時動画ストリーム数</td>
+<td>基準</td>
+<td><strong>1.6倍</strong></td>
+</tr>
+<tr>
+<td>Tensor Core世代</td>
+<td>4th Gen</td>
+<td><strong>5th Gen</strong></td>
+</tr>
+<tr>
+<td>RT Core世代</td>
+<td>3rd Gen</td>
+<td><strong>4th Gen</strong></td>
+</tr>
+</tbody></table>
+<h3>インスタンスサイズ一覧</h3>
+<table>
+<thead>
+<tr>
+<th>インスタンス名</th>
+<th>GPU数</th>
+<th>GPUメモリ合計</th>
+<th>vCPU</th>
+<th>システムメモリ</th>
+<th>ストレージ</th>
+<th>ネットワーク帯域幅</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>g7.2xlarge</td>
+<td>1</td>
+<td>32 GB</td>
+<td>8</td>
+<td>32 GiB</td>
+<td>1×600 GB</td>
+<td>最大60 Gbps</td>
+</tr>
+<tr>
+<td>g7.4xlarge</td>
+<td>1</td>
+<td>32 GB</td>
+<td>16</td>
+<td>64 GiB</td>
+<td>1×600 GB</td>
+<td>最大100 Gbps</td>
+</tr>
+<tr>
+<td>g7.8xlarge</td>
+<td>1</td>
+<td>32 GB</td>
+<td>32</td>
+<td>128 GiB</td>
+<td>1×950 GB</td>
+<td>最大100 Gbps</td>
+</tr>
+<tr>
+<td>g7.12xlarge</td>
+<td>2</td>
+<td>64 GB</td>
+<td>48</td>
+<td>192 GiB</td>
+<td>1×1900 GB</td>
+<td>175 Gbps</td>
+</tr>
+<tr>
+<td>g7.24xlarge</td>
+<td>4</td>
+<td>128 GB</td>
+<td>96</td>
+<td>384 GiB</td>
+<td>1×3800 GB</td>
+<td>350 Gbps</td>
+</tr>
+<tr>
+<td>g7.48xlarge</td>
+<td>8</td>
+<td>256 GB</td>
+<td>192</td>
+<td>768 GiB</td>
+<td>2×3800 GB</td>
+<td>700 Gbps</td>
+</tr>
+<tr>
+<td>g7.metal <em>(近日公開)</em></td>
+<td>8</td>
+<td>256 GB</td>
+<td>192</td>
+<td>768 GiB</td>
+<td>2×3800 GB</td>
+<td>700 Gbps</td>
+</tr>
+</tbody></table>
+<h3>主なユースケース</h3>
+<ul>
+<li><strong>AIインファレンス</strong>：言語翻訳、動画・画像解析、音声認識、レコメンデーションシステム、会話型AIアシスタント、RAG（検索拡張生成）</li>
+<li><strong>グラフィックス</strong>：リアルタイムCG・映像レンダリング、ゲームストリーミング、ADAS・ロボティクスシミュレーション、AI対応AR/VR、仮想デスクトップインフラ（VDI）</li>
+<li><strong>データ分析</strong>：大規模データ処理パイプライン、GPUアクセラレーテッドアナリティクス（Amazon EMR on EKS）、ベクターデータベース</li>
+</ul>
+<h3>他のAWSサービスとの連携</h3>
+<ul>
+<li><strong>Amazon SageMaker AI</strong>：マネージドMLデプロイ（近日統合予定）</li>
+<li><strong>Amazon EKS / Amazon ECS</strong>：コンテナオーケストレーションによるスケーラブルなGPUワークロード運用</li>
+<li><strong>Amazon EMR on EKS</strong>：GPUアクセラレーテッドなビッグデータ分析</li>
+<li><strong>Amazon FSx for Lustre</strong>：GPUDirect RDMAによる高速ストレージアクセス</li>
+<li><strong>AWS PCS（Parallel Computing Service）</strong>：Slurmベースのハイパフォーマンスコンピューティング</li>
+</ul>
+<h2>使い方</h2>
+<h3>利用開始方法</h3>
+<p>G7インスタンスは以下のいずれかの方法で起動できます。</p>
+<ol>
+<li><strong>AWS Management Console</strong>：<a href="https://console.aws.amazon.com/ec2/">Amazon EC2コンソール</a>からインスタンスタイプに <code>g7.*</code> を選択して起動</li>
+<li><strong>AWS CLI</strong>：<code>aws ec2 run-instances --instance-type g7.2xlarge ...</code> のように指定</li>
+<li><strong>AWS SDK</strong>：各言語のSDKから <code>InstanceType</code> に <code>g7.*</code> を指定</li>
+</ol>
+<h3>推奨AMI・セットアップ手順</h3>
+<table>
+<thead>
+<tr>
+<th>ユースケース</th>
+<th>推奨AMI・方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>AIインファレンス全般</td>
+<td><strong>AWS Deep Learning AMIs (DLAMI)</strong>（GPUドライバー・フレームワーク同梱）</td>
+</tr>
+<tr>
+<td>グラフィックスワークロード</td>
+<td><strong>NVIDIA Workstation AMIs</strong>（NVIDIAドライバー事前インストール済み）</td>
+</tr>
+<tr>
+<td>コンテナ（Kubernetes）</td>
+<td>Amazon EKS + NVIDIA driver R595でのEKS AMIビルド</td>
+</tr>
+<tr>
+<td>コンテナ（ECS）</td>
+<td>Amazon ECSでのGPU対応タスク定義</td>
+</tr>
+<tr>
+<td>HPCワークロード</td>
+<td>AWS PCS（Slurm）との組み合わせ</td>
+</tr>
+</tbody></table>
+<h3>購入オプション</h3>
+<ul>
+<li><strong>オンデマンドインスタンス</strong>：従量課金、すぐに利用開始可能</li>
+<li><strong>Savings Plans</strong>：1年または3年のコミットメントで大幅なコスト削減</li>
+<li><strong>スポットインスタンス</strong>：未使用のEC2キャパシティを活用した低コスト運用</li>
+<li><strong>Dedicated Instances</strong>：<code>g7.12xlarge</code>・<code>g7.24xlarge</code>・<code>g7.48xlarge</code> サイズで対応</li>
+</ul>
+<h3>利用可能リージョン</h3>
+<p>現時点では以下の2リージョンで利用可能です。</p>
+<ul>
+<li><strong>US East (Ohio)</strong> （<code>us-east-2</code>）</li>
+<li><strong>US West (Oregon)</strong> （<code>us-west-2</code>）</li>
+</ul>
+<p>今後のリージョン展開は <a href="https://aws.amazon.com/about-aws/global-infrastructure/regional-product-services/">AWS Capabilities by Region</a> ページのCloudFormationリソースタブで確認できます。</p>
+<h2>注意点</h2>
+<ul>
+<li><strong>g7.metal は近日公開</strong>：ベアメタルサイズ（<code>g7.metal</code>）は現時点では「Coming soon」ステータスのため、ベアメタルが必要なワークロードはリリースを待つ必要があります。</li>
+<li><strong>提供リージョンは限定的</strong>：一般提供開始時点では US East (Ohio) と US West (Oregon) の2リージョンのみです。東京リージョンなど他リージョンへの展開時期は未発表のため、日本国内のレイテンシが重要なシステムでは引き続き利用計画の検討が必要です。</li>
+<li><strong>Amazon SageMaker AI 統合は近日公開</strong>：SageMaker AIとのマネージド統合は「coming soon」とされており、現時点ではDLAMIやEKS/ECSを使った自己管理でのデプロイが必要です。</li>
+<li><strong>Amazon EKSで利用する場合はNVIDIAドライバーのバージョンに注意</strong>：EKSで使用するには <strong>NVIDIA driver version R595</strong> でEKS AMIをビルドする必要があります。標準のEKS最適化AMIには含まれていない場合があるため、EKS提供の自動化スクリプトを使用してください。</li>
+<li><strong>Dedicated Instancesのサポートはサイズ限定</strong>：専有インスタンスは <code>g7.12xlarge</code>・<code>g7.24xlarge</code>・<code>g7.48xlarge</code> のみ対応しています。コンプライアンス要件でDedicated Instancesが必須の場合は対応サイズを事前に確認してください。</li>
+<li><strong>G6との互換性</strong>：G7インスタンスのGPUドライバー（NVIDIA R595系）はG6（L4 GPU向けドライバー）と異なる場合があります。既存G6ワークロードの移行時はAMIやドライバーの対応確認が必要です。</li>
+<li><strong>料金情報</strong>：詳細な料金はAWSが公式に更新する <a href="https://aws.amazon.com/ec2/pricing/">Amazon EC2料金ページ</a> を参照してください。G7はG6より高性能である分、料金単価も高くなる可能性があります。Savings Plansやスポットインスタンスの活用でコスト最適化を検討してください。</li>
+</ul>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/06/amazon-ec2-g7-generally-available">AWS What&#39;s New: Amazon EC2 G7 instances are now generally available</a> — 本発表の公式アナウンス</li>
+<li><a href="https://aws.amazon.com/blogs/aws/announcing-amazon-ec2-g7-instances-accelerated-by-nvidia-rtx-pro-4500-blackwell-server-edition-gpus/">AWS News Blog: Announcing Amazon EC2 G7 instances accelerated by NVIDIA RTX PRO 4500 Blackwell Server Edition GPUs</a> — 詳細な技術仕様・スペック表・利用開始ガイド</li>
+<li><a href="https://aws.amazon.com/ec2/instance-types/g7/">Amazon EC2 G7 instances product page</a> — インスタンスサイズ一覧・機能・ユースケース概要</li>
+<li><a href="https://aws.amazon.com/ec2/instance-types/g6/">Amazon EC2 G6 instances product page</a> — 旧世代G6との比較参照用</li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/06/amazon-ec2-g7-generally-available" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 4件</li></ul></div>
+</article>
+<footer>
+<p>Generated by <a href="https://github.com/konoken/update-unpacker">Update Unpacker</a> · 2026/6/18</p>
+</footer>
+</body>
+</html>
