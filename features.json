@@ -16,6 +16,14 @@
     "sourceName": "AWS What's New"
   },
   {
+    "id": "8kaPvj6sxx09",
+    "slug": "amazon-bedrock-managed-knowledge-base-ga",
+    "title": "Amazon Bedrock Managed Knowledge Baseが一般提供開始——フルマネージドRAGサービス",
+    "date": "2026-06-17",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "fcM4RXuxnlme",
     "slug": "amazon-bedrock-openai-gpt55-gpt54-codex-ga",
     "title": "OpenAIのGPT-5.5・GPT-5.4・CodexがAmazon Bedrockで一般提供開始",

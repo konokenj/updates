@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon Bedrock Managed Knowledge Baseが一般提供開始——フルマネージドRAGサービス</title>
+<meta name="description" content="ベクトルDB・データパイプライン・検索インフラ不要のフルマネージドRAGサービスが正式GA。S3・SharePoint・Confluenceなど6種コネクタ、マルチホップ対応のAgentic Retrieval、ハイブリッド検索を内蔵。Bedrock AgentCoreとネイティブ統合し、東京リージョンでも利用可能。">
+<meta property="og:title" content="Amazon Bedrock Managed Knowledge Baseが一般提供開始——フルマネージドRAGサービス">
+<meta property="og:description" content="ベクトルDB・データパイプライン・検索インフラ不要のフルマネージドRAGサービスが正式GA。S3・SharePoint・Confluenceなど6種コネクタ、マルチホップ対応のAgentic Retrieval、ハイブリッド検索を内蔵。Bedrock AgentCoreとネイティブ統合し、東京リージョンでも利用可能。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/8kaPvj6sxx09/amazon-bedrock-managed-knowledge-base-ga/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/8kaPvj6sxx09/amazon-bedrock-managed-knowledge-base-ga/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>Amazon Bedrock Managed Knowledge Baseが一般提供開始——フルマネージドRAGサービス</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What&#039;s New</span>
+<span> · 2026/6/17</span>
+</div>
+<div class="summary"><strong>要約:</strong> ベクトルDB・データパイプライン・検索インフラ不要のフルマネージドRAGサービスが正式GA。S3・SharePoint・Confluenceなど6種コネクタ、マルチホップ対応のAgentic Retrieval、ハイブリッド検索を内蔵。Bedrock AgentCoreとネイティブ統合し、東京リージョンでも利用可能。</div>
+<h2>新機能の背景</h2>
+<p>RAG（Retrieval-Augmented Generation）は、企業独自のデータをファンデーションモデルに組み合わせ、回答の精度・関連性を高める手法として広く注目されています。しかし従来の RAG 実装には、ベクトルデータベースの構築・運用、データパイプラインの整備、埋め込みモデルや再ランキングモデルの選定・管理、検索インフラのスケーリングなど、多くの技術的負担が伴っていました。</p>
+<p>Amazon Bedrock Knowledge Bases にはこれまで「カスタムナレッジベース」（Amazon OpenSearch Serverless や Aurora、Pinecone などの自前ベクトルストアを使用する方式）が存在していましたが、インフラ管理を AWS に完全に委ねられる選択肢はありませんでした。</p>
+<p>この課題を解決するため、ベクトルストア・データ取り込みパイプライン・検索最適化のすべてをフルマネージドで提供する <strong>Managed Knowledge Base</strong> が一般提供（GA）となりました。開発チームがインフラ運用ではなくアプリケーション開発そのものに集中できる環境を整えることが、本リリースの背景にあります。</p>
+<h2>新機能の概要</h2>
+<p>Amazon Bedrock Managed Knowledge Base は、RAG に必要なすべてのインフラ（ベクトルストア・埋め込み・再ランキング・取り込みパイプライン）を AWS が完全に管理するフルマネージド RAG サービスです。ナレッジベースタイプとして <code>MANAGED</code> を指定するだけで利用でき、ストレージは自動管理されます（必要に応じて KMS キーによる暗号化も可能）。</p>
+<h3>主な機能</h3>
+<h4>1. 6 つのネイティブデータソースコネクタ（自動同期対応）</h4>
+<table>
+<thead>
+<tr>
+<th>コネクタ</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Amazon S3</strong></td>
+<td>クラウドオブジェクトストレージ</td>
+</tr>
+<tr>
+<td><strong>Microsoft SharePoint</strong></td>
+<td>イントラネット・ドキュメント管理</td>
+</tr>
+<tr>
+<td><strong>Confluence</strong></td>
+<td>チーム Wiki・ドキュメント</td>
+</tr>
+<tr>
+<td><strong>Google Drive</strong></td>
+<td>クラウドファイルストレージ</td>
+</tr>
+<tr>
+<td><strong>Microsoft OneDrive</strong></td>
+<td>個人・共有ファイル</td>
+</tr>
+<tr>
+<td><strong>Web Crawler</strong></td>
+<td>公開・社内 Web ページ</td>
+</tr>
+</tbody></table>
+<h4>2. Smart Parsing（スマートパーシング）</h4>
+<p>データタイプやコネクタごとに最適なパース戦略を自動選択し、メタデータ・埋め込み画像・スレッドのコンテキストを保持しながらテキスト・画像・音声・動画・多言語コンテンツをマルチモーダルで処理します。チャンキングやパース戦略の試行錯誤に数週間かかっていた作業を排除します。</p>
+<h4>3. Agentic Retrieval（エージェンティック検索）</h4>
+<p>複雑なマルチホップクエリに対応した検索機能です。単一パスの従来型検索と異なり、ユーザーの意図を自動解析し、最適なデータソースを特定しながら複数ステップで反復検索を行い、包括的な回答を返します。カスタムオーケストレーションコード不要で <strong>1 回の API 呼び出し</strong>で完結し、クエリ単位のフラット料金で課金の予測可能性も確保されています。</p>
+<h4>4. ハイブリッド検索・ドキュメントランキング</h4>
+<p>ベクトル検索とキーワード検索を組み合わせたハイブリッド検索と、検索結果の再ランキングにより、検索精度を向上させます。</p>
+<h4>5. Amazon Bedrock AgentCore とのネイティブ統合</h4>
+<p>Lambda 関数やカスタム統合コードが不要な事前ビルト済みターゲットタイプとして統合されます。取得トレースとパフォーマンスメトリクスによるオブザーバビリティ、セッションメモリ、MCP（Model Context Protocol）互換性が組み込みで提供されます。</p>
+<h4>6. 主要 AI フレームワークとの連携</h4>
+<p><strong>Strands Agents</strong>・<strong>LangChain</strong>・<strong>CrewAI</strong>・<strong>LlamaIndex</strong> のリトリーバーとして設定可能です。</p>
+<h3>利用可能リージョン（2026年6月時点）</h3>
+<ul>
+<li>米国東部（バージニア北部）</li>
+<li>米国西部（オレゴン）</li>
+<li>アジアパシフィック（シドニー、東京）</li>
+<li>ヨーロッパ（ダブリン、フランクフルト、ロンドン）</li>
+<li>AWS GovCloud（US-West）</li>
+</ul>
+<h2>使い方</h2>
+<h3>クイックスタート（コンソール）</h3>
+<ol>
+<li><a href="https://console.aws.amazon.com/bedrock/home?region=us-east-1#/knowledge-bases">Amazon Bedrock コンソール</a> を開く</li>
+<li><strong>Knowledge Bases</strong> → <strong>Create knowledge base</strong> を選択</li>
+<li>ナレッジベースタイプとして <strong>Managed</strong> を選択</li>
+<li>データソースコネクタ（S3 / SharePoint / Confluence など）を接続</li>
+<li>データソースを同期（以降は自動同期）</li>
+<li>API または Amazon Bedrock Agents から検索・回答生成を呼び出す</li>
+</ol>
+<h3>API 呼び出し例（通常検索 / 回答生成）</h3>
+<pre><code class="hljs language-python"><span class="hljs-keyword">import</span> boto3
+
+bedrock_agent_runtime = boto3.client(<span class="hljs-string">&quot;bedrock-agent-runtime&quot;</span>, region_name=<span class="hljs-string">&quot;us-east-1&quot;</span>)
+
+<span class="hljs-comment"># 検索のみ（Retrieve）</span>
+response = bedrock_agent_runtime.retrieve(
+    knowledgeBaseId=<span class="hljs-string">&quot;YOUR_KB_ID&quot;</span>,
+    retrievalQuery={<span class="hljs-string">&quot;text&quot;</span>: <span class="hljs-string">&quot;休暇申請の手続きを教えてください&quot;</span>}
+)
+
+<span class="hljs-comment"># 検索 + 回答生成（RetrieveAndGenerate）</span>
+response = bedrock_agent_runtime.retrieve_and_generate(
+    <span class="hljs-built_in">input</span>={<span class="hljs-string">&quot;text&quot;</span>: <span class="hljs-string">&quot;休暇申請の手続きを教えてください&quot;</span>},
+    retrieveAndGenerateConfiguration={
+        <span class="hljs-string">&quot;type&quot;</span>: <span class="hljs-string">&quot;KNOWLEDGE_BASE&quot;</span>,
+        <span class="hljs-string">&quot;knowledgeBaseConfiguration&quot;</span>: {
+            <span class="hljs-string">&quot;knowledgeBaseId&quot;</span>: <span class="hljs-string">&quot;YOUR_KB_ID&quot;</span>,
+            <span class="hljs-string">&quot;modelArn&quot;</span>: <span class="hljs-string">&quot;arn:aws:bedrock:us-east-1::foundation-model/anthropic.claude-3-sonnet-20240229-v1:0&quot;</span>
+        }
+    }
+)
+<span class="hljs-built_in">print</span>(response[<span class="hljs-string">&quot;output&quot;</span>][<span class="hljs-string">&quot;text&quot;</span>])
+</code></pre><h3>Agentic Retrieval の活用（複雑なマルチホップクエリ）</h3>
+<pre><code class="hljs language-python"><span class="hljs-comment"># Agentic Retrieval API でエージェント的な複数ステップ検索を実行</span>
+response = bedrock_agent_runtime.retrieve(
+    knowledgeBaseId=<span class="hljs-string">&quot;YOUR_KB_ID&quot;</span>,
+    retrievalQuery={<span class="hljs-string">&quot;text&quot;</span>: <span class="hljs-string">&quot;今期の売上不振の原因と、過去の類似ケースでの対応策を教えてください&quot;</span>},
+    retrievalConfiguration={
+        <span class="hljs-string">&quot;vectorSearchConfiguration&quot;</span>: {
+            <span class="hljs-string">&quot;overrideSearchType&quot;</span>: <span class="hljs-string">&quot;HYBRID&quot;</span>
+        }
+    }
+)
+</code></pre><h3>ユースケース別の活用例</h3>
+<table>
+<thead>
+<tr>
+<th>ユースケース</th>
+<th>活用方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>社内ヘルプデスク</strong></td>
+<td>SharePoint・Confluence・OneDrive を接続し、社内規定・手続きへの質問に即座に回答</td>
+</tr>
+<tr>
+<td><strong>カスタマーサポート自動化</strong></td>
+<td>製品ドキュメント・FAQ・過去のケース履歴をもとにサポートエージェントを強化</td>
+</tr>
+<tr>
+<td><strong>営業支援</strong></td>
+<td>顧客データや商談情報を蓄積し、提案資料作成や類似事例検索を効率化</td>
+</tr>
+<tr>
+<td><strong>マルチモーダル KB</strong></td>
+<td>動画・音声・画像を含むコンテンツを横断して検索・回答生成</td>
+</tr>
+</tbody></table>
+<h2>注意点</h2>
+<h3>Managed vs Custom ナレッジベースの選択</h3>
+<p>Amazon Bedrock Knowledge Bases には <strong>Managed</strong>（本 GA）と <strong>Custom</strong>（自前ベクトルストア管理）の 2 種類があります。インフラ管理を最小化してすぐに始めたい場合は Managed を、OpenSearch Serverless や Aurora などを独自設定でチューニングしたい高度なユースケースでは Custom を選択してください。</p>
+<h3>利用可能リージョンの制限</h3>
+<p>2026年6月時点では、対応リージョンは US East（N. Virginia）・US West（Oregon）・アジアパシフィック（シドニー・東京）・ヨーロッパ（ダブリン・フランクフルト・ロンドン）・AWS GovCloud（US-West）の合計 8 リージョンです。日本からは**東京リージョン（ap-northeast-1）**が対象に含まれています。対応リージョンは今後拡大が見込まれますが、本番利用前に最新状況を<a href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-supported.html">公式ドキュメント</a>で確認してください。</p>
+<h3>Agentic Retrieval の料金モデル</h3>
+<p>Agentic Retrieval はトークン課金ではなく<strong>クエリ単位のフラット料金</strong>モデルです。複雑なマルチホップクエリで複数の推論ステップが発生しても、料金が急増しません。ただし、独自モデル（BYOM）を持ち込む場合はコストが桁違いに高くなる可能性があるため、デフォルトの AWS 独自検索モデルとの比較を事前に行うことを推奨します。</p>
+<h3>カスタム埋め込み・再ランキングモデルの利用</h3>
+<p>デフォルトでは AWS がサービス管理モデルを使用しますが、独自の Bedrock 埋め込みモデルや再ランキングモデルを持ち込むことも可能です。既存の検索スタックとの統合を検討している場合に有効です。</p>
+<h3>データ同期のタイミング</h3>
+<p>データソースへの変更は自動同期されますが、同期頻度やタイミングはデータソースの種類によって異なります。リアルタイム性が求められるユースケースでは、同期スケジュールと許容レイテンシを事前に確認してください。</p>
+<h3>セキュリティ・暗号化</h3>
+<p>保存データの暗号化には KMS キーを任意で指定できます。AgentCore 統合では<strong>自動生成パーミッション</strong>と<strong>組み込みオブザーバビリティ</strong>が提供されますが、本番環境では IAM ポリシーの最小権限原則に沿った設定を改めて確認することを推奨します。</p>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/06/amazon-bedrock-managed-knowledge-base/">AWS What&#39;s New: Amazon Bedrock Managed Knowledge Base is now generally available</a></li>
+<li><a href="https://aws.amazon.com/bedrock/knowledge-bases/">Amazon Bedrock Knowledge Bases 製品ページ</a></li>
+<li><a href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base.html">Amazon Bedrock Knowledge Bases ドキュメント</a></li>
+<li><a href="https://docs.aws.amazon.com/bedrock/latest/userguide/kb-build-managed.html">Managed Knowledge Base の構築ガイド</a></li>
+<li><a href="https://docs.aws.amazon.com/bedrock/latest/userguide/knowledge-base-supported.html">サポート対象モデルおよびリージョン一覧</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/06/amazon-bedrock-managed-knowledge-base/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 2件</li></ul></div>
+</article>
+<footer>
+<p>Generated by Update Unpacker · 2026/6/17</p>
+<p>この解説はAIにより自動生成されています。内容の正確性は保証されません。重要な判断を行う際は、必ず一次情報をご確認ください。</p>
+</footer>
+</body>
+</html>
