@@ -1,5 +1,13 @@
 [
   {
+    "id": "DxJAXdOAQSzR",
+    "slug": "aws-lambda-microvms-isolated-sandbox",
+    "title": "AWS Lambda MicroVMs登場 — VMレベル分離・瞬時起動・状態保持を同時に実現するサーバーレスコンピュートプリミティブ",
+    "date": "2026-06-22",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "GVvDhtzrXo66",
     "slug": "ec2-g7-instances-nvidia-rtx-pro-4500-blackwell-gpu-ga",
     "title": "Amazon EC2 G7インスタンスが一般提供開始 — NVIDIA RTX PRO 4500 Blackwell GPU搭載でG6比最大4.6倍のAI推論性能を実現",

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AWS Lambda MicroVMs登場 — VMレベル分離・瞬時起動・状態保持を同時に実現するサーバーレスコンピュートプリミティブ</title>
+<meta name="description" content="ユーザー・AI生成コードをVMレベルで安全に分離実行できる新サーバーレスプリミティブ。Firecrackerスナップショットで瞬時起動・再開、最大8時間のステートフル実行を実現。分離性・速度・状態保持をトレードオフなく提供。最大32GBメモリ/16 vCPU、東京含む5リージョンで提供開始。">
+<meta property="og:title" content="AWS Lambda MicroVMs登場 — VMレベル分離・瞬時起動・状態保持を同時に実現するサーバーレスコンピュートプリミティブ">
+<meta property="og:description" content="ユーザー・AI生成コードをVMレベルで安全に分離実行できる新サーバーレスプリミティブ。Firecrackerスナップショットで瞬時起動・再開、最大8時間のステートフル実行を実現。分離性・速度・状態保持をトレードオフなく提供。最大32GBメモリ/16 vCPU、東京含む5リージョンで提供開始。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/DxJAXdOAQSzR/aws-lambda-microvms-isolated-sandbox/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/DxJAXdOAQSzR/aws-lambda-microvms-isolated-sandbox/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>AWS Lambda MicroVMs登場 — VMレベル分離・瞬時起動・状態保持を同時に実現するサーバーレスコンピュートプリミティブ</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What&#039;s New</span>
+<span> · 2026/6/22</span>
+</div>
+<div class="summary"><strong>要約:</strong> ユーザー・AI生成コードをVMレベルで安全に分離実行できる新サーバーレスプリミティブ。Firecrackerスナップショットで瞬時起動・再開、最大8時間のステートフル実行を実現。分離性・速度・状態保持をトレードオフなく提供。最大32GBメモリ/16 vCPU、東京含む5リージョンで提供開始。</div>
+<h2>新機能の背景</h2>
+<p>近年、<strong>マルチテナントアプリケーション</strong>の新たなカテゴリが急増しています。AIコーディングアシスタント、インタラクティブなコーディング環境、データ分析プラットフォーム、脆弱性スキャンツール、ユーザー提供スクリプトを実行するゲームサーバーなど、いずれも「アプリケーション開発者が書いていないコード（エンドユーザーやAIが生成したコード）」を、テナントごとに完全に分離した環境で安全に動かす必要があります。</p>
+<p>しかし従来の選択肢は、次の三択のいずれかを強いるものでした：</p>
+<table>
+<thead>
+<tr>
+<th>選択肢</th>
+<th>分離性</th>
+<th>起動速度</th>
+<th>状態保持</th>
+<th>問題点</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>仮想マシン（VM）</strong></td>
+<td>✅ 強固</td>
+<td>❌ 数分かかる</td>
+<td>✅ あり</td>
+<td>起動が遅く、管理が複雑</td>
+</tr>
+<tr>
+<td><strong>コンテナ</strong></td>
+<td>⚠️ カーネル共有</td>
+<td>✅ 秒単位</td>
+<td>⚠️ 限定的</td>
+<td>信頼できないコードを安全に動かすには大規模なカスタムハードニングが必要</td>
+</tr>
+<tr>
+<td><strong>FaaS（Lambda Functions 等）</strong></td>
+<td>✅ あり</td>
+<td>✅ 高速</td>
+<td>❌ なし</td>
+<td>イベント駆動・リクエスト/レスポンス型に最適化されており、長時間のインタラクティブセッションや状態保持には不向き</td>
+</tr>
+</tbody></table>
+<p>この「<strong>分離性・起動速度・状態保持を同時に満たすことができない</strong>」という課題を解決するために、Lambda MicroVMs が登場しました。</p>
+<h2>新機能の概要</h2>
+<p><strong>AWS Lambda MicroVMs</strong> は、AWS Lambda の新しいサーバーレスコンピュートプリミティブです。仮想化インフラの管理なしに、分離性・起動速度・状態保持の三要素をトレードオフなく提供します。</p>
+<h3>コア機能</h3>
+<h4>1. VM レベルの分離</h4>
+<p><a href="https://firecracker-microvm.github.io/">Firecracker</a> 仮想化技術を基盤とし、各 MicroVM は専用のカーネルと専用リソースを持ちます。あるユーザーの実行環境から他のユーザーの環境やホストシステムにアクセスすることはできません。この Firecracker は毎月 15 兆回以上の Lambda Function 実行を支えており、実績あるセキュリティと信頼性を受け継いでいます。</p>
+<h4>2. 超高速起動・再開（スナップショットベース）</h4>
+<p>「イメージ作成→起動」モデルを採用しています。Dockerfile とコードから <strong>MicroVM Image</strong> を作成すると、Lambda がアプリケーションを完全に初期化したうえで、そのメモリ・ディスク状態を Firecracker スナップショットとして保存します。その後の起動・再開はすべてこのスナップショットから行われるため、コールドスタートなしでほぼ瞬時に立ち上がります。</p>
+<h4>3. ステートフルな実行（サスペンド・再開）</h4>
+<p>実行中の MicroVM はメモリ・ディスク・プロセス状態をセッション全体にわたって保持します。アイドル時には最大 <strong>8 時間</strong>サスペンド（一時停止）でき、再開時にはインストール済みパッケージ、ロード済みモデル、作業中のファイルセットがそのまま復元されます。サスペンド中はコンピュート課金が発生しません。</p>
+<h3>主な仕様</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>仕様</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>アーキテクチャ</td>
+<td>ARM64（Graviton）</td>
+</tr>
+<tr>
+<td>ベースライン構成（デフォルト）</td>
+<td>2 GB メモリ / 1 vCPU</td>
+</tr>
+<tr>
+<td>最大スペック</td>
+<td>32 GB メモリ / 16 vCPU / 32 GB ディスク</td>
+</tr>
+<tr>
+<td>垂直スケール</td>
+<td>ベースラインの最大 4 倍まで自動スケール</td>
+</tr>
+<tr>
+<td>接続プロトコル</td>
+<td>HTTPS、HTTP/2、gRPC、WebSocket</td>
+</tr>
+<tr>
+<td>最大実行時間</td>
+<td>8 時間</td>
+</tr>
+<tr>
+<td>ネットワーク</td>
+<td>専用 HTTPS エンドポイント URL（ロードバランサー不要）、パブリックインターネットおよび VPC へのアウトバウンドアクセス設定可能</td>
+</tr>
+</tbody></table>
+<h3>主なユースケース</h3>
+<ul>
+<li><strong>インタラクティブなコーディング環境</strong> — ユーザーがリアルタイムでコードを記述・実行する開発環境（IDE）</li>
+<li><strong>AI コード実行サンドボックス</strong> — AI が生成したコードを安全に実行するエフェメラルなサンドボックス</li>
+<li><strong>データ分析プラットフォーム</strong> — Jupyter Notebook 等、ユーザー提供スクリプトを処理するエフェメラルなデータ処理ワークロード</li>
+<li><strong>セキュリティスキャン・脆弱性評価</strong> — 分離された実行環境を必要とする脆弱性評価ツール</li>
+<li><strong>マルチテナント CI/CD</strong> — テナント間の分離を必要とするタスクエグゼキュータ</li>
+<li><strong>強化学習環境</strong> — AI エージェントの評価・トレーニング用サンドボックス（毎回フレッシュな環境を起動）</li>
+<li><strong>ゲームサーバー</strong> — ユーザー提供スクリプトを強固な分離で実行するホスティング環境</li>
+</ul>
+<h3>提供リージョン（2026年6月時点）</h3>
+<p>米国東部（バージニア北部）、米国東部（オハイオ）、米国西部（オレゴン）、欧州（アイルランド）、アジアパシフィック（東京）</p>
+<h3>料金体系の概要</h3>
+<p>Lambda MicroVMs の料金は、Lambda Functions とは異なる仕組みです：</p>
+<ul>
+<li><strong>コンピュート</strong>: MicroVM 稼働中はベースライン分を秒単位で課金。ピーク時の超過リソース（ベースラインを超えた分）は実際に消費した期間のみ課金</li>
+<li><strong>スナップショット</strong>: 読み取り（起動・再開時）・書き込み（サスペンド時）操作ごと、およびイメージストレージ（GB/月）で課金</li>
+<li><strong>データ転送</strong>: 標準 AWS レート</li>
+</ul>
+<blockquote>
+<p><strong>コスト最適化のポイント</strong>: アイドル時のサスペンドを活用することで、待機コストを大幅に削減できます。サスペンド中はコンピュート課金が停止し、スナップショットストレージのみの課金となります。</p>
+</blockquote>
+<h2>使い方</h2>
+<p>Lambda MicroVMs の利用は「<strong>イメージ作成 → 起動 → 接続・利用 → サスペンド/再開 → 終了</strong>」の流れで進めます。AWS Lambda コンソール、AWS CLI、AWS CloudFormation、AWS CDK、または <a href="https://github.com/aws/agent-toolkit-for-aws/tree/main/skills/specialized-skills/serverless-skills/aws-lambda-microvms">Agent Toolkit for AWS</a> から操作できます。</p>
+<hr>
+<h3>Step 1: MicroVM イメージの作成</h3>
+<p>アプリコード（例: <code>app.py</code>）と <code>Dockerfile</code> を ZIP アーカイブにまとめ、Amazon S3 にアップロードします。AWS 提供のベースイメージ（例: <code>public.ecr.aws/lambda/microvms:al2023-minimal</code>）を <code>FROM</code> に指定した Dockerfile を用意してください。</p>
+<p><strong>Dockerfile の例（Flask アプリ）</strong></p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-keyword">FROM</span> public.ecr.aws/lambda/microvms:al2023-minimal
+<span class="hljs-keyword">RUN</span><span class="language-bash"> dnf install -y python3 python3-pip &amp;&amp; dnf clean all</span>
+
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app</span>
+<span class="hljs-keyword">COPY</span><span class="language-bash"> requirements.txt .</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> pip install --no-cache-dir -r requirements.txt</span>
+<span class="hljs-keyword">COPY</span><span class="language-bash"> app.py .</span>
+<span class="hljs-keyword">EXPOSE</span> <span class="hljs-number">5000</span>
+
+<span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;gunicorn&quot;</span>, <span class="hljs-string">&quot;--bind&quot;</span>, <span class="hljs-string">&quot;0.0.0.0:5000&quot;</span>, <span class="hljs-string">&quot;app:app&quot;</span>]</span>
+</code></pre><p><strong>CLI でイメージを作成する</strong></p>
+<pre><code class="hljs language-bash">aws lambda-microvms create-microvm-image \
+  --code-artifact uri=s3://&lt;bucket&gt;/&lt;path&gt;/artifact.zip \
+  --name &lt;イメージ名&gt; \
+  --base-image-arn arn:aws:lambda:us-east-1:aws:microvm-image:al2023-1 \
+  --build-role-arn &lt;IAM ロール ARN&gt;
+</code></pre><p>Lambda がコンテナビルドを実行し、アプリを初期化したうえで Firecracker スナップショットを作成します。ビルドログは Amazon CloudWatch（<code>/aws/lambda/microvms/&lt;image-name&gt;</code>）にリアルタイムで出力されます。完成したイメージには ARN とバージョン番号が付与されます。</p>
+<hr>
+<h3>Step 2: MicroVM の起動</h3>
+<p>イメージ ARN、実行ロール、アイドルポリシーを指定して MicroVM を起動します。</p>
+<pre><code class="hljs language-bash">aws lambda-microvms run-microvm \
+  --image-identifier arn:aws:lambda:&lt;region&gt;:&lt;account-id&gt;:microvm-image:&lt;イメージ名&gt; \
+  --execution-role-arn arn:aws:iam::&lt;account-id&gt;:role/MicroVMExecutionRole \
+  --idle-policy <span class="hljs-string">&#x27;{
+    &quot;maxIdleDurationSeconds&quot;: 900,
+    &quot;suspendedDurationSeconds&quot;: 300,
+    &quot;autoResumeEnabled&quot;: true
+  }&#x27;</span>
+</code></pre><ul>
+<li>Lambda は MicroVM に一意の ID と<strong>専用 HTTPS エンドポイント URL</strong> を自動で割り当てます</li>
+<li>ロードバランサーや追加のネットワーク設定は不要です</li>
+<li>アプリはスナップショットから再開されるため、起動完了時点ですでに動作しています</li>
+<li><code>autoResumeEnabled: true</code> を設定すると、次のリクエスト到来時に自動で再開します</li>
+</ul>
+<hr>
+<h3>Step 3: トラフィックの送信・接続</h3>
+<p>CLI で短期認証トークンを生成し、<code>X-aws-proxy-auth</code> ヘッダーに付与して HTTPS リクエストを送信します。HTTP/2、gRPC、WebSocket も同じエンドポイント経由で利用できます。</p>
+<pre><code class="hljs language-bash"><span class="hljs-comment"># 認証トークンの生成</span>
+aws lambda-microvms generate-auth-token --microvm-id &lt;MicroVM ID&gt;
+
+<span class="hljs-comment"># エンドポイントへのリクエスト</span>
+curl -H <span class="hljs-string">&quot;X-aws-proxy-auth: &lt;token&gt;&quot;</span> https://&lt;endpoint-url&gt;/
+</code></pre><hr>
+<h3>Step 4: サスペンド・再開</h3>
+<p>アイドル状態になった MicroVM はメモリ・ディスク状態を保持したままサスペンドされ、コンピュート課金が停止します。</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>自動サスペンド</td>
+<td><code>run-microvm</code> 時に <code>idlePolicy</code> を設定（アイドル時間超過で自動サスペンド）</td>
+</tr>
+<tr>
+<td>手動サスペンド</td>
+<td><code>aws lambda-microvms suspend-microvm --microvm-id &lt;ID&gt;</code></td>
+</tr>
+<tr>
+<td>自動再開</td>
+<td><code>autoResumeEnabled: true</code> を設定（次のリクエスト到来時に自動再開）</td>
+</tr>
+<tr>
+<td>手動再開</td>
+<td><code>aws lambda-microvms resume-microvm --microvm-id &lt;ID&gt;</code></td>
+</tr>
+</tbody></table>
+<hr>
+<h3>Step 5: 終了（リソース解放）</h3>
+<p>セッション終了後は MicroVM をターミネートしてすべてのリソースを解放します。</p>
+<pre><code class="hljs language-bash">aws lambda-microvms terminate-microvm --microvm-id &lt;MicroVM ID&gt;
+</code></pre><h2>注意点</h2>
+<p>Lambda MicroVMs を利用する際は、以下の点に注意してください。</p>
+<h4>1. スナップショット互換性（初期化フックの統合が必要になる場合がある）</h4>
+<p>MicroVM はあらかじめ初期化されたスナップショットから起動します。そのため、アプリケーション初期化フェーズで<strong>一意なコンテンツの生成</strong>（乱数シードなど）、<strong>ネットワーク接続の確立</strong>、<strong>エフェメラルデータのロード</strong>を行う場合は、サービス提供のフックと統合してスナップショット再開後に再実行する仕組みが必要になることがあります。</p>
+<h4>2. アーキテクチャは現時点で ARM64（Graviton）のみ</h4>
+<p>x86 アーキテクチャは現時点でサポートされていません。x86 専用の依存関係やバイナリを使用している場合は、ARM64 対応版への移行が必要です。</p>
+<h4>3. 最大実行時間は 8 時間</h4>
+<p>1 つの MicroVM の最大ライフタイムは <strong>8 時間</strong>です。8 時間を超えるワークロードには対応していません。長時間のバッチ処理などは設計時に考慮が必要です。</p>
+<h4>4. 提供リージョンが限定的（現時点）</h4>
+<p>2026年6月時点では <strong>5 リージョン</strong>（バージニア北部、オハイオ、オレゴン、アイルランド、東京）のみの提供です。これら以外のリージョンでの利用はまだできません。</p>
+<h4>5. Lambda Functions とは別の API サーフェス・別の料金体系</h4>
+<p>Lambda MicroVMs は Lambda Functions とは<strong>異なる API</strong>（<code>lambda-microvms</code> サブコマンド）を持ちます。既存の Lambda Functions コードや SDK の呼び出しをそのまま転用することはできません。また、料金体系も全く異なります：</p>
+<ul>
+<li>Lambda Functions: リクエスト数＋実行時間（GB-秒）で課金</li>
+<li>Lambda MicroVMs: インスタンス稼働秒単位で課金（MicroVM が起動中はベースライン分が常に発生）</li>
+</ul>
+<p>イベント駆動・リクエスト/レスポンス型のワークロードには引き続き Lambda Functions が適しています。両者は競合ではなく補完関係にあります。</p>
+<h4>6. アイドルコストの管理が重要</h4>
+<p>MicroVM が起動中（サスペンドされていない状態）の間は、実際のリクエストがなくてもベースラインのコンピュート課金が発生します。コスト最適化のために、<strong>アイドルポリシーの適切な設定</strong>（<code>maxIdleDurationSeconds</code> の調整）を必ず行い、不要な MicroVM はすみやかにサスペンドまたはターミネートしてください。</p>
+<h4>7. MicroVM イメージのストレージに最低 1 週間の保持期間</h4>
+<p>MicroVM Image のストレージには <strong>1 週間の最低保持期間</strong>があり、それ未満での削除はできません。短命なイメージを大量に作成するユースケースでは保持コストを考慮する必要があります。</p>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/06/aws-lambda-microvms/">AWS What&#39;s New: AWS introduces Lambda MicroVMs for isolated execution of user and AI-generated code</a></li>
+<li><a href="https://docs.aws.amazon.com/lambda/latest/dg/lambda-microvms-guide.html">AWS Lambda MicroVMs Developer Guide</a></li>
+<li><a href="https://aws.amazon.com/blogs/aws/run-isolated-sandboxes-with-full-lifecycle-control-aws-lambda-introduces-microvms">AWS Blog: Run isolated sandboxes with full lifecycle control: AWS Lambda introduces MicroVMs</a></li>
+<li><a href="https://aws.amazon.com/lambda/pricing/">AWS Lambda Pricing（MicroVMs 料金詳細・計算例含む）</a></li>
+<li><a href="https://github.com/aws/agent-toolkit-for-aws/tree/main/skills/specialized-skills/serverless-skills/aws-lambda-microvms">Agent Toolkit for AWS — Lambda MicroVMs スキル</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/06/aws-lambda-microvms/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 4件</li></ul></div>
+</article>
+<footer>
+<p>Generated by Update Unpacker · 2026/6/22</p>
+<p>この解説はAIにより自動生成されています。内容の正確性は保証されません。重要な判断を行う際は、必ず一次情報をご確認ください。</p>
+</footer>
+</body>
+</html>
