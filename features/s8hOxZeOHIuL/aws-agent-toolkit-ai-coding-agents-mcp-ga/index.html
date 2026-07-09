@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AWS、Agent Toolkit for AWSを一般提供開始 — AIコーディングエージェントのAWS構築を支援する本番対応ツールスイート</title>
+<meta name="description" content="AIコーディングエージェントがAWSで効果的に構築できるよう支援する本番対応ツールスイート。エージェントスキル・AWS MCPサーバー・プラグインの3コンポーネントで構成。エラー削減・トークンコスト低減・IAMガバナンスを実現。AWS LabsのMCPサーバー群の後継製品。">
+<meta property="og:title" content="AWS、Agent Toolkit for AWSを一般提供開始 — AIコーディングエージェントのAWS構築を支援する本番対応ツールスイート">
+<meta property="og:description" content="AIコーディングエージェントがAWSで効果的に構築できるよう支援する本番対応ツールスイート。エージェントスキル・AWS MCPサーバー・プラグインの3コンポーネントで構成。エラー削減・トークンコスト低減・IAMガバナンスを実現。AWS LabsのMCPサーバー群の後継製品。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/s8hOxZeOHIuL/aws-agent-toolkit-ai-coding-agents-mcp-ga/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/s8hOxZeOHIuL/aws-agent-toolkit-ai-coding-agents-mcp-ga/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>AWS、Agent Toolkit for AWSを一般提供開始 — AIコーディングエージェントのAWS構築を支援する本番対応ツールスイート</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What&#039;s New</span>
+<span> · 2026/5/6</span>
+</div>
+<div class="summary"><strong>要約:</strong> AIコーディングエージェントがAWSで効果的に構築できるよう支援する本番対応ツールスイート。エージェントスキル・AWS MCPサーバー・プラグインの3コンポーネントで構成。エラー削減・トークンコスト低減・IAMガバナンスを実現。AWS LabsのMCPサーバー群の後継製品。</div>
+<h2>新機能の背景</h2>
+<p>AIコーディングエージェントをAWSでの開発に活用する開発者は、近年次のような深刻な課題に直面していました。</p>
+<ul>
+<li><strong>マルチサービスワークフローの複雑さ</strong>：複数のAWSサービスを組み合わせた複雑なワークフローで、エージェントが適切に対応しきれず、誤ったAPI呼び出しや試行錯誤を繰り返してしまう。</li>
+<li><strong>古い知識への依存</strong>：基盤モデルのトレーニングデータは数ヶ月〜数年前のものであるため、Amazon S3 Tables・Aurora DSQL・Bedrock AgentCoreなど新しいサービスや機能についての知識が欠落している。</li>
+<li><strong>ガバナンスの困難さ</strong>：エージェントがローカル端末でAWSコマンドを実行する場合、エージェントの操作と人間の操作を区別できず、組織全体のポリシーを適用したり、アクティビティを監査することが事実上不可能だった。</li>
+<li><strong>トークンコストの増大</strong>：ベストプラクティスを知らないエージェントが試行錯誤を繰り返すことで、不要なAPIコールが大量発生し、トークンコストが膨らんでいた。</li>
+</ul>
+<p>これらの問題を解決するために、AWSは本番環境対応の統合ツールスイートである <strong>Agent Toolkit for AWS</strong> を開発・リリースしました。なお、本ツールキットはAWS Labsで提供されてきたMCPサーバー・スキル・プラグイン群の正式な後継製品として位置づけられています。</p>
+<h2>新機能の概要</h2>
+<p>Agent Toolkit for AWSは、AIコーディングエージェントがAWSサービスを使って効果的に構築・デプロイ・運用できるよう支援する、3つの主要コンポーネントから構成された本番対応ツールスイートです。</p>
+<hr>
+<h3>1. エージェントスキル（Agent Skills）</h3>
+<p>特定のAWSタスクをエージェントが正確・確実に完了するための、<strong>キュレートされた手順書・コードスクリプト・参考資料のパッケージ</strong>です。エージェントが一般知識に頼って即興で対応するのではなく、AWSのベストプラクティスに沿った検証済み手順を辿れるようにします。</p>
+<ul>
+<li><strong>サービス選択ガイド</strong>：特定ユースケースに最適なAWSサービスを選ぶための推奨事項とトレードオフ分析</li>
+<li><strong>ステップバイステップ手順</strong>：S3 Tablesの作成、Glue ETLパイプラインのセットアップ、IAMポリシーの設定、サーバーレスアプリケーションのデプロイなど、代表的なタスクの実証済みワークフロー</li>
+<li><strong>トラブルシューティングガイド</strong>：一般的なエラーの診断手順と根本原因分析・解決ステップ</li>
+<li><strong>オンデマンド読み込み</strong>：スキルはタスクに応じてその都度読み込まれるため、コンテキストウィンドウの使用量を最小限に抑えられる</li>
+</ul>
+<p>今回の発表では、IaC・ストレージ・アナリティクス・サーバーレス・コンテナ・AIサービスを対象とした <strong>40以上のスキル</strong> が公開されました。今後はデータベース・ネットワーキング・IAM向けスキルも追加予定です。</p>
+<hr>
+<h3>2. AWS MCPサーバー（AWS MCP Server）</h3>
+<p>AIエージェントがModel Context Protocol（MCP）経由でAWSに安全にアクセスできるようにする、<strong>フルマネージド型リモートサーバー</strong>です。今回のリリースで一般提供（GA）となりました。</p>
+<table>
+<thead>
+<tr>
+<th>機能</th>
+<th>詳細</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>完全なAWS APIカバレッジ</strong></td>
+<td>300以上のAWSサービス・15,000以上のAPIアクションに対応。AWS CLIをローカルにインストール不要</td>
+</tr>
+<tr>
+<td><strong>サンドボックス実行環境</strong></td>
+<td>Pythonスクリプトをローカルのファイルシステムやネットワークにアクセスせず隔離された環境で実行可能</td>
+</tr>
+<tr>
+<td><strong>リアルタイムドキュメント検索</strong></td>
+<td>最新のAWSドキュメント・APIリファレンス・サービス機能を認証なしで検索・取得</td>
+</tr>
+<tr>
+<td><strong>エンタープライズ制御</strong></td>
+<td>IAMコンテキストキー（<code>aws:CalledViaAWSMCP</code>）によるエージェント専用ポリシーの適用、CloudWatchメトリクスとCloudTrail監査ログ</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>3. エージェントプラグイン（Agent Plugins）</h3>
+<p>AWS MCPサーバーの設定と厳選されたスキルセットを <strong>1回のインストールでまとめて導入</strong> できる簡易パッケージです。</p>
+<table>
+<thead>
+<tr>
+<th>プラグイン</th>
+<th>対象ユーザー・用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>aws-core</strong></td>
+<td>アプリケーション開発者向け。サービス選択・CDK/CloudFormation・サーバーレス・コンテナ・ストレージ・オブザーバビリティ・デプロイメント等</td>
+</tr>
+<tr>
+<td><strong>aws-agents</strong></td>
+<td>AIエンジニア向け。Amazon Bedrock AgentCoreを使った本番対応AIエージェントの構築</td>
+</tr>
+<tr>
+<td><strong>aws-data-analytics</strong></td>
+<td>データエンジニア・BIエンジニア向け。S3 Tables・AWS Glue・Athenaを使ったデータパイプラインの構築・運用</td>
+</tr>
+</tbody></table>
+<p>現在Claude CodeとCodexに対応しており、今後他のエージェントへのサポートも拡張予定です。</p>
+<h2>使い方</h2>
+<p><strong>前提条件</strong></p>
+<ul>
+<li><a href="https://docs.astral.sh/uv/">uv</a> のインストールが必要（MCPプロキシの動作に必要）</li>
+<li>APIコール・スクリプト実行にはAWSアカウントとローカルに設定済みのIAM認証情報が必要（ドキュメント検索・スキル探索は認証情報なしで利用可能）</li>
+</ul>
+<hr>
+<h3>Claude Code の場合</h3>
+<pre><code class="hljs">/plugin marketplace add aws/agent-toolkit-for-aws
+/plugin install aws-core@agent-toolkit-for-aws
+/reload-plugins
+</code></pre><p>追加プラグインのインストール例：</p>
+<pre><code class="hljs">/plugin install aws-agents@agent-toolkit-for-aws
+/plugin install aws-data-analytics@agent-toolkit-for-aws
+</code></pre><hr>
+<h3>Codex の場合</h3>
+<p>ターミナルで以下を実行後、Codexを起動して <code>/plugins</code> コマンドからインストールします。</p>
+<pre><code class="hljs">codex plugin marketplace add aws/agent-toolkit-for-aws
+</code></pre><hr>
+<h3>プラグイン非対応エージェントの場合</h3>
+<p>エージェントのMCP設定ファイル（例：Kiro CLIなら <code>~/.kiro/settings/mcp.json</code>）に以下を追記します。</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;mcpServers&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;aws&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;command&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;uvx&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;args&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-string">&quot;mcp-proxy-for-aws@latest&quot;</span><span class="hljs-punctuation">,</span> <span class="hljs-string">&quot;https://mcp.us-east-1.amazonaws.com&quot;</span><span class="hljs-punctuation">]</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre><p>スキルはCLIから個別に追加することも可能です。</p>
+<pre><code class="hljs">npx skills add aws/agent-toolkit-for-aws
+</code></pre><hr>
+<h3>接続確認</h3>
+<p>インストール後、新しい会話を開始して以下のように質問することで接続を確認できます。</p>
+<blockquote>
+<p>「利用可能なAWSリージョンを教えて」</p>
+</blockquote>
+<p>AWSリージョンの一覧が返ってきたら接続成功です。認証エラーが出る場合はユーザーガイドのトラブルシューティングを参照してください。</p>
+<p>エージェントは関連スキルをリクエスト内容から<strong>自動的に検出・使用</strong>するため、ユーザーが個別のスキルを把握・指定する必要はありません。</p>
+<h2>注意点</h2>
+<ul>
+<li><p><strong>料金について</strong>：Agent Toolkit for AWS自体は追加料金なしで利用可能です。エージェントがプロビジョニング・操作するAWSリソースに対しては、通常のAWS料金が発生します。</p>
+</li>
+<li><p><strong>AWS Labsとの関係</strong>：AWS LabsのMCPサーバー・スキル・プラグインは引き続き利用可能で、コントリビューションも受け付けます。ただし今後はAgent Toolkit for AWSへの移行が推奨されており、AWS Labsの優れたツールは段階的にAgent Toolkit for AWSへ統合されていく予定です。既存のAWS Labsユーザーはすぐに移行を迫られるわけではありませんが、新機能・新スキルはAgent Toolkit for AWS側で優先的に提供されます。</p>
+</li>
+<li><p><strong>IAMポリシーの設計</strong>：IAMコンテキストキー <code>aws:CalledViaAWSMCP</code> を活用することで、「MCPサーバー経由のエージェント操作だけ読み取り専用に制限する」など、エージェントの行動にのみ適用される細かいポリシーを作成できます。既存のIAMロールに広い権限がある場合でも、エージェント経由のアクションを安全にスコープ制限できます。</p>
+</li>
+<li><p><strong>スキルのカバレッジ</strong>：今回提供されるのはIaC・ストレージ・アナリティクス・サーバーレス・コンテナ・AIサービスを対象とした40以上のスキルです。データベース・ネットワーキング・IAM向けスキルは今後追加予定であるため、これらの領域での利用は現時点では限定的な場合があります。</p>
+</li>
+<li><p><strong>対応エージェント</strong>：プラグインによるワンクリックインストールは現在Claude CodeとCodexに対応。Cursor等の他エージェントはMCPサーバーを直接設定する方法で利用可能です。スキルのみの利用であればMCP対応の任意のエージェントで使えます。</p>
+</li>
+</ul>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/05/agent-toolkit/">AWS What&#39;s New: Agent Toolkit for AWS</a></li>
+<li><a href="https://aws.amazon.com/products/developer-tools/agent-toolkit-for-aws/">Agent Toolkit for AWS 製品ページ</a></li>
+<li><a href="https://docs.aws.amazon.com/agent-toolkit/latest/userguide/quick-start.html">クイックスタートガイド（ユーザーガイド）</a></li>
+<li><a href="https://github.com/aws/agent-toolkit-for-aws">GitHub — aws/agent-toolkit-for-aws</a></li>
+<li><a href="https://github.com/awslabs">AWS Labs</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/05/agent-toolkit/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 4件</li></ul></div>
+</article>
+<footer>
+<p>Generated by Update Unpacker · 2026/5/6</p>
+<p>この解説はAIにより自動生成されています。内容の正確性は保証されません。重要な判断を行う際は、必ず一次情報をご確認ください。</p>
+</footer>
+</body>
+</html>
