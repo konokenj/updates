@@ -1,5 +1,13 @@
 [
   {
+    "id": "tc89saiOp5no",
+    "slug": "cloudformation-cdk-pre-deployment-validation-all-stack-ops",
+    "title": "AWS CloudFormation・CDK、CreateStack/UpdateStack操作にデプロイ前検証を追加——エラーを秒単位で検出",
+    "date": "2026-06-30",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "DxJAXdOAQSzR",
     "slug": "aws-lambda-microvms-isolated-sandbox",
     "title": "AWS Lambda MicroVMs登場 — VMレベル分離・瞬時起動・状態保持を同時に実現するサーバーレスコンピュートプリミティブ",
