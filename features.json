@@ -1,5 +1,13 @@
 [
   {
+    "id": "1qG2RpXABE8I",
+    "slug": "cloudwatch-coding-agent-insights",
+    "title": "Amazon CloudWatch コーディングエージェントインサイトを発表、AIコーディングツールのROIを組織全体で可視化",
+    "date": "2026-07-20",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "tc89saiOp5no",
     "slug": "cloudformation-cdk-pre-deployment-validation-all-stack-ops",
     "title": "AWS CloudFormation・CDK、CreateStack/UpdateStack操作にデプロイ前検証を追加——エラーを秒単位で検出",

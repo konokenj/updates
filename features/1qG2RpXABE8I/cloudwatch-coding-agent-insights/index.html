@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon CloudWatch コーディングエージェントインサイトを発表、AIコーディングツールのROIを組織全体で可視化</title>
+<meta name="description" content="AIコーディングエージェント（Claude Code・Codex・GitHub Copilot）の利用状況・コスト・生産性指標をCloudWatchで一元可視化。Claude apps gateway for AWS経由で追加実装なしにテレメトリを収集し、チーム・組織単位でROIを分析できる。">
+<meta property="og:title" content="Amazon CloudWatch コーディングエージェントインサイトを発表、AIコーディングツールのROIを組織全体で可視化">
+<meta property="og:description" content="AIコーディングエージェント（Claude Code・Codex・GitHub Copilot）の利用状況・コスト・生産性指標をCloudWatchで一元可視化。Claude apps gateway for AWS経由で追加実装なしにテレメトリを収集し、チーム・組織単位でROIを分析できる。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/1qG2RpXABE8I/cloudwatch-coding-agent-insights/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/1qG2RpXABE8I/cloudwatch-coding-agent-insights/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>Amazon CloudWatch コーディングエージェントインサイトを発表、AIコーディングツールのROIを組織全体で可視化</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What&#039;s New</span>
+<span> · 2026/7/20</span>
+</div>
+<div class="summary"><strong>要約:</strong> AIコーディングエージェント（Claude Code・Codex・GitHub Copilot）の利用状況・コスト・生産性指標をCloudWatchで一元可視化。Claude apps gateway for AWS経由で追加実装なしにテレメトリを収集し、チーム・組織単位でROIを分析できる。</div>
+<h2>新機能の背景</h2>
+<p>企業がClaude Code・OpenAI Codex・GitHub CopilotなどのAIコーディングエージェントを組織全体に展開する動きが加速する中、「投資対効果（ROI）をどう測るか」が共通の課題となっています。従来は各エージェントの利用状況がバラバラに記録されるか、まったく可視化されておらず、エンジニアリングリーダーが次の問いに答えるのが困難でした。</p>
+<ul>
+<li>どのチームにエージェントアクセスを拡大すれば最大の効果が得られるか</li>
+<li>エージェントはどこで開発速度を向上させているか</li>
+<li>部門ごとのトークン予算をどう適切に設定するか</li>
+</ul>
+<p>さらにスケール時の課題として、開発者ごとに個別のAPIキーを管理し、設定を手作業で配布し、コスト追跡を各チームの独自実装に委ねるという分散したガバナンス問題もありました。こうした背景から、OpenTelemetry（OTel）標準を活用した統合的な可視化基盤と、一元的なコントロールプレーンの必要性が高まっていました。</p>
+<h2>新機能の概要</h2>
+<p><strong>Amazon CloudWatch コーディングエージェントインサイト</strong>は、AIコーディングツールが組織全体でどのような価値を生み出しているかをエンジニアリングリーダーが把握できるようにする、CloudWatchコンソール上のすぐに使えるダッシュボード群です。CloudWatchコンソールの <strong>GenAI Observability &gt; Coding Agent Insights</strong> から直接アクセスでき、ダッシュボードの作成やインポートは不要で、エージェントがメトリクスを送信し始めると自動的に表示・集計されます。</p>
+<h3>対応コーディングエージェント</h3>
+<table>
+<thead>
+<tr>
+<th>エージェント</th>
+<th>テレメトリ収集方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Claude Code</strong></td>
+<td>Claude apps gateway for AWS経由（追加インストルメンテーション不要）</td>
+</tr>
+<tr>
+<td><strong>OpenAI Codex</strong></td>
+<td>ベアラートークンまたはエンタープライズSSO経由のOTLP設定</td>
+</tr>
+<tr>
+<td><strong>GitHub Copilot</strong></td>
+<td>ベアラートークン経由のOTLP設定</td>
+</tr>
+</tbody></table>
+<h3>主な機能</h3>
+<ul>
+<li><strong>コスト・利用状況の追跡</strong>: トークン消費量、コスト、モデル別コスト対出力比などをorganization・department・team・cost center・ユーザーの各軸でスライス＆ダイス</li>
+<li><strong>支出アラート</strong>: トークン請求の先行アラートを設定し、予算超過を事前に検知</li>
+<li><strong>開発生産性との相関分析</strong>: エージェント採用率とコミットスループットやPRマージ速度の改善を相関させて効果測定</li>
+<li><strong>CSVエクスポート</strong>: 基礎データを独自分析用にエクスポート</li>
+<li><strong>PromQL対応</strong>: 標準のPromQLでクエリでき、独自ダッシュボードやアラームも構築可能</li>
+</ul>
+<h3>Claude apps gateway for AWSとの連携</h3>
+<p>Claude Codeの場合、<strong>Claude apps gateway for AWS</strong>を経由することで追加の実装なしにテレメトリを収集できます。このゲートウェイは<code>claude</code>バイナリに内包されたセルフホスト型のコントロールプレーンで、以下の5つを一元管理します。</p>
+<ol>
+<li><strong>アイデンティティ</strong>: OIDC対応のIdP（Okta、Microsoft Entra ID、Google Workspace等）によるSSO認証</li>
+<li><strong>ポリシー</strong>: 許可モデル、ツール権限、マネージド設定をIdPグループ単位で集中制御</li>
+<li><strong>テレメトリ</strong>: OTLP/HTTPでCloudWatch・Datadog・Splunk・ClickHouseなど複数の宛先へファンアウト配信</li>
+<li><strong>ルーティング</strong>: Amazon Bedrock・Claude Platform on AWS・Google Cloud・Microsoft Foundry・Anthropic APIへの振り分けとフェイルオーバー</li>
+<li><strong>支出上限</strong>: 組織・グループ・ユーザー単位の日次・週次・月次支出キャップ</li>
+</ol>
+<p>ゲートウェイを経由した場合、各メトリクスにはIdPから取得したユーザー・チーム・組織の属性が付与されるため、Coding Agent Insightsダッシュボードがそのまま組織軸で集計されます。</p>
+<h2>使い方</h2>
+<h3>Claude Code + Claude apps gatewayの設定手順</h3>
+<p>Claude Codeのエンタープライズ展開でコーディングエージェントインサイトを利用するには、以下の手順でClaude apps gatewayをデプロイし、CloudWatchへのテレメトリ送信を設定します。</p>
+<p><strong>前提条件の確認</strong></p>
+<table>
+<thead>
+<tr>
+<th>要件</th>
+<th>詳細</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Claude Codeバージョン</td>
+<td>v2.1.195以降</td>
+</tr>
+<tr>
+<td>アイデンティティプロバイダー</td>
+<td>OIDC対応（Okta、Microsoft Entra ID、Google Workspace、Keycloak、Dex等）</td>
+</tr>
+<tr>
+<td>データベース</td>
+<td>PostgreSQL 14以降</td>
+</tr>
+<tr>
+<td>モデルアップストリーム</td>
+<td>Amazon Bedrock、Claude Platform on AWS、Google Cloud等</td>
+</tr>
+<tr>
+<td>TLS</td>
+<td>HTTPS証明書またはTLS終端イングレス</td>
+</tr>
+<tr>
+<td>ランタイム</td>
+<td>本番環境はLinux（macOSはローカル開発のみ）</td>
+</tr>
+</tbody></table>
+<p><strong>ゲートウェイのデプロイ</strong></p>
+<ol>
+<li>IdPにOAuthクライアントを登録し、リダイレクトURIを <code>https://claude-gateway.your-domain/oauth/callback</code> に設定する</li>
+<li>PostgreSQL 14以降のデータベースをプロビジョニングする（ゲートウェイが起動時にスキーママイグレーションを実行）</li>
+<li><code>gateway.yaml</code> を作成し、Amazon Bedrockをアップストリームとする最小構成例を記述する</li>
+<li><code>claude gateway --config gateway.yaml</code> でゲートウェイを起動する（DockerComposeまたはバイナリ直接起動）</li>
+<li>認証フローを確認し、開発者のエンドツーエンド接続をテストする</li>
+</ol>
+<p><strong>開発者をゲートウェイに接続する</strong></p>
+<p>MDMや構成管理ツールで以下のマネージド設定を開発者マシンに配布します。</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;forceLoginMethod&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;gateway&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;forceLoginGatewayUrl&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;https://claude-gateway.internal.example.com&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre><p>開発者は <code>claude /login</code> を実行し、ブラウザでのSSO認証を完了するだけで接続が完了します。</p>
+<p><strong>CloudWatchへのテレメトリ送信設定</strong></p>
+<p><code>gateway.yaml</code> の <code>telemetry</code> セクションにCloudWatchをOTLP/HTTP配信先として追加します。ゲートウェイは各エクスポートにIdPから取得した開発者のアイデンティティを付与するため、ユーザー・チーム・組織属性付きでメトリクスがCloudWatchに到達します。詳細は<a href="https://code.claude.com/docs/en/claude-apps-gateway-config">設定リファレンス</a>を参照してください。</p>
+<p><strong>ダッシュボードの確認</strong></p>
+<ol>
+<li>CloudWatchコンソール（<a href="https://console.aws.amazon.com/cloudwatch/%EF%BC%89%E3%82%92%E9%96%8B%E3%81%8F">https://console.aws.amazon.com/cloudwatch/）を開く</a></li>
+<li>ナビゲーションペインで <strong>GenAI Observability</strong> &gt; <strong>Coding Agent Insights</strong> を選択する</li>
+<li>コーディングエージェントのタブを選択する（メトリクスはエージェントがデータを送信してから数分以内に表示される）</li>
+</ol>
+<h3>その他エージェント（Codex・GitHub Copilot）の場合</h3>
+<p>ゲートウェイを使わず直接OTLPエンドポイントを設定する方式で、ベアラートークンまたはエンタープライズSSO経由でCloudWatchのネイティブOTLPメトリクスエンドポイントへ送信します。各エージェントのセットアップガイドは<a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/coding-agents-insights.html">Coding Agent Insightsドキュメント</a>を参照してください。</p>
+<h2>注意点</h2>
+<p><strong>利用可能リージョン</strong>
+CloudWatch コーディングエージェントインサイトは、以下の3リージョンを<strong>除く</strong>すべてのAWSコマーシャルリージョンで利用可能です。</p>
+<ul>
+<li>Middle East (UAE)</li>
+<li>Middle East (Bahrain)</li>
+<li>Israel (Tel Aviv)</li>
+</ul>
+<p><strong>料金</strong>
+標準のCloudWatch OpenTelemetryメトリクス取り込み料金が適用されます。追加の機能料金はなく、メトリクスの量に応じた従量課金となります。詳細は<a href="https://aws.amazon.com/cloudwatch/pricing/">CloudWatch料金ページ</a>を参照してください。</p>
+<p><strong>メトリクス属性の形式要件</strong>
+Coding Agent Insightsダッシュボードは特定のメトリクスと属性の形式に依存しています。エージェントのネイティブOTelメトリクスは<code>model</code>や<code>token_type</code>などのコアディメンションを持ちますが、<code>user.email</code>・<code>team.id</code>・<code>department</code>・<code>cost_center</code>・<code>organization</code>などのアイデンティティおよび組織属性はOTelの<strong>リソース属性</strong>として送信する必要があります。メトリクス名を変更したり、アイデンティティ属性をリソースから外したりすると、ダッシュボードが正しく集計されない場合があります。セットアップガイドに従って設定することで、この形式が自動的に保たれます。</p>
+<p><strong>Claude apps gatewayのインフラ要件</strong>
+Claude apps gatewayはセルフホスト型のため、ECS・EKS・EC2上でのコンテナ実行環境、内部Application Load Balancer、AWS Certificate ManagerによるTLS証明書、Amazon RDS for PostgreSQLが必要です。本番環境はLinuxのみサポートされ、macOSはローカル開発専用です。</p>
+<p><strong>Claude Codeの最低バージョン</strong>
+Claude apps gatewayを使用するにはClaude Code v2.1.195以降が必要です。それ以前のバージョンではゲートウェイ連携機能（<code>/login</code>フローのゲートウェイ対応）が利用できません。</p>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/07/cloudwatch-coding-agent-insights/">AWS What&#39;s New: Amazon CloudWatch announces coding agent insights</a></li>
+<li><a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/coding-agents-insights.html">Coding Agent Insights - Amazon CloudWatch ドキュメント</a></li>
+<li><a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/monitoring/coding-agents-claude-code-gateway.html">Set up Claude Code with the Claude apps gateway - Amazon CloudWatch ドキュメント</a></li>
+<li><a href="https://aws.amazon.com/blogs/machine-learning/introducing-claude-apps-gateway-for-aws/">Introducing Claude apps gateway for AWS - AWS Machine Learning Blog</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/07/cloudwatch-coding-agent-insights/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 4件</li></ul></div>
+</article>
+<footer>
+<p>Generated by Update Unpacker · 2026/7/20</p>
+<p>この解説はAIにより自動生成されています。内容の正確性は保証されません。重要な判断を行う際は、必ず一次情報をご確認ください。</p>
+</footer>
+</body>
+</html>
