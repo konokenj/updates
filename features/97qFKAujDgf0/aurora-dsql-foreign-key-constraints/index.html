@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon Aurora DSQLが外部キー制約をサポート、分散SQLで参照整合性をデータベース層で宣言的に管理可能に</title>
+<meta name="description" content="Aurora DSQLのサーバーレス分散SQL環境でFOREIGN KEY制約が利用可能に。新規・既存テーブルへの制約追加、CASCADE／SET NULL等の参照アクション、DEFERRABLE制約をサポート。ロックを使わない楽観的並行制御でマルチリージョン環境の参照整合性を保証。Aurora DSQL提供の全AWSリージョンで利用可能。">
+<meta property="og:title" content="Amazon Aurora DSQLが外部キー制約をサポート、分散SQLで参照整合性をデータベース層で宣言的に管理可能に">
+<meta property="og:description" content="Aurora DSQLのサーバーレス分散SQL環境でFOREIGN KEY制約が利用可能に。新規・既存テーブルへの制約追加、CASCADE／SET NULL等の参照アクション、DEFERRABLE制約をサポート。ロックを使わない楽観的並行制御でマルチリージョン環境の参照整合性を保証。Aurora DSQL提供の全AWSリージョンで利用可能。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/97qFKAujDgf0/aurora-dsql-foreign-key-constraints/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/97qFKAujDgf0/aurora-dsql-foreign-key-constraints/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>Amazon Aurora DSQLが外部キー制約をサポート、分散SQLで参照整合性をデータベース層で宣言的に管理可能に</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What&#039;s New</span>
+<span> · 2026/8/27</span>
+</div>
+<div class="summary"><strong>要約:</strong> Aurora DSQLのサーバーレス分散SQL環境でFOREIGN KEY制約が利用可能に。新規・既存テーブルへの制約追加、CASCADE／SET NULL等の参照アクション、DEFERRABLE制約をサポート。ロックを使わない楽観的並行制御でマルチリージョン環境の参照整合性を保証。Aurora DSQL提供の全AWSリージョンで利用可能。</div>
+<h2>新機能の背景</h2>
+<p>Aurora DSQL はサーバーレス・分散型の SQL データベースであり、PostgreSQL 互換性とアクティブ/アクティブのマルチリージョン可用性を兼ね備えています。しかしこれまで、テーブル間の参照関係（例：注文は必ず存在する商品を参照する、など）を<strong>データベース側で宣言的に表現する外部キー制約</strong>をサポートしていませんでした。</p>
+<p>分散データベースで外部キーを実装するには、複数ノードをまたぐ整合性チェックとコンフリクト解決という技術的困難がありました。制約がなかった間は、開発者がアプリケーションコード側でこれらのチェックを実装する必要があり、実装漏れや競合状態による不整合リスクを常に抱えていました。</p>
+<p>今回のサポートにより、参照整合性ルールをデータベース層に宣言することができ、アプリケーションの信頼性・保守性が大きく向上します。</p>
+<h2>新機能の概要</h2>
+<p>Aurora DSQL の新規・既存テーブルに <code>FOREIGN KEY</code> 制約を宣言できるようになりました。Aurora DSQL が利用可能なすべての AWS リージョンで利用可能です。</p>
+<h3>参照アクション</h3>
+<p>参照先の行が削除・更新されたときの動作を以下の 5 種類から選択できます。</p>
+<table>
+<thead>
+<tr>
+<th>アクション</th>
+<th>動作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>NO ACTION</code>（デフォルト）</td>
+<td>制約違反が残る場合はエラー。<code>DEFERRABLE</code> 指定時はコミット時まで遅延可能</td>
+</tr>
+<tr>
+<td><code>RESTRICT</code></td>
+<td>即座にエラー。遅延不可</td>
+</tr>
+<tr>
+<td><code>CASCADE</code></td>
+<td>参照元の行を自動的に削除または更新</td>
+</tr>
+<tr>
+<td><code>SET NULL</code></td>
+<td>参照元の外部キー列を <code>NULL</code> に設定</td>
+</tr>
+<tr>
+<td><code>SET DEFAULT</code></td>
+<td>参照元の外部キー列をデフォルト値に設定</td>
+</tr>
+</tbody></table>
+<h3>マッチタイプ</h3>
+<table>
+<thead>
+<tr>
+<th>マッチタイプ</th>
+<th>動作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>MATCH SIMPLE</code>（デフォルト）</td>
+<td>外部キー列の一部が <code>NULL</code> であれば参照チェックをスキップ</td>
+</tr>
+<tr>
+<td><code>MATCH FULL</code></td>
+<td>複合外部キーの場合、全列が <code>NULL</code> か全列が非 <code>NULL</code> でなければならない</td>
+</tr>
+</tbody></table>
+<h3>遅延可能制約（Deferrability）</h3>
+<p><code>DEFERRABLE</code> オプションにより、制約チェックのタイミングを制御できます。</p>
+<table>
+<thead>
+<tr>
+<th>オプション</th>
+<th>チェックタイミング</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>NOT DEFERRABLE</code>（デフォルト）</td>
+<td>各ステートメント実行直後</td>
+</tr>
+<tr>
+<td><code>DEFERRABLE INITIALLY IMMEDIATE</code></td>
+<td>デフォルトは各ステートメント後。トランザクション内で <code>SET CONSTRAINTS ... DEFERRED</code> により遅延可能</td>
+</tr>
+<tr>
+<td><code>DEFERRABLE INITIALLY DEFERRED</code></td>
+<td>デフォルトはコミット時。トランザクション内で <code>SET CONSTRAINTS ... IMMEDIATE</code> により即時化可能</td>
+</tr>
+</tbody></table>
+<h3>整合性保証の仕組み</h3>
+<p>Aurora DSQL は 2 段階で参照整合性を維持します。</p>
+<ol>
+<li><p><strong>スナップショット検証（トランザクション実行中）</strong><br>各トランザクションはその開始時点のスナップショットに対して参照整合性を検証します。ロックを取得せず読み取るため、他のトランザクションが並行して参照先・参照元テーブルを変更し続けることができます。</p>
+</li>
+<li><p><strong>コミット時の競合解決</strong><br>スナップショット検証後、別トランザクションがコミットの間に参照先行を削除したり、競合する参照元行を挿入したりした場合、Aurora DSQL はシリアライゼーションエラーでトランザクションを失敗させます。これにより「参照先が存在しない参照元」が確定することはありません。</p>
+</li>
+</ol>
+<h2>使い方</h2>
+<h3>1. 列制約として定義する（単一列の外部キー）</h3>
+<p>最もシンプルな形式です。列定義の後ろに <code>REFERENCES</code> を記述します。</p>
+<pre><code class="hljs language-sql"><span class="hljs-comment">-- products テーブル（参照先）</span>
+<span class="hljs-keyword">CREATE TABLE</span> products (
+    product_no <span class="hljs-type">integer</span> <span class="hljs-keyword">PRIMARY KEY</span>,
+    name       text,
+    price      <span class="hljs-type">numeric</span>
+);
+
+<span class="hljs-comment">-- orders テーブル（参照元）：product_no は products に存在する値のみ許可</span>
+<span class="hljs-keyword">CREATE TABLE</span> orders (
+    order_id   <span class="hljs-type">integer</span> <span class="hljs-keyword">PRIMARY KEY</span>,
+    product_no <span class="hljs-type">integer</span> <span class="hljs-keyword">REFERENCES</span> products,   <span class="hljs-comment">-- 主キーを自動参照</span>
+    quantity   <span class="hljs-type">integer</span>
+);
+</code></pre><h3>2. テーブル制約として定義する（複合外部キー）</h3>
+<p>複数列をまとめて外部キーにする場合は <code>FOREIGN KEY (...)</code> 構文を使います。</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE TABLE</span> inventory (
+    warehouse_id <span class="hljs-type">integer</span>,
+    product_no   <span class="hljs-type">integer</span>,
+    quantity     <span class="hljs-type">integer</span>,
+    <span class="hljs-keyword">PRIMARY KEY</span> (warehouse_id, product_no)
+);
+
+<span class="hljs-keyword">CREATE TABLE</span> shipments (
+    shipment_id  <span class="hljs-type">integer</span> <span class="hljs-keyword">PRIMARY KEY</span>,
+    warehouse_id <span class="hljs-type">integer</span>,
+    product_no   <span class="hljs-type">integer</span>,
+    <span class="hljs-keyword">FOREIGN KEY</span> (warehouse_id, product_no)
+        <span class="hljs-keyword">REFERENCES</span> inventory (warehouse_id, product_no)
+);
+</code></pre><h3>3. 参照アクションを指定する</h3>
+<p>削除時に参照元を連鎖削除する例（<code>ON DELETE CASCADE</code>）。</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE TABLE</span> orders (
+    order_id   <span class="hljs-type">integer</span> <span class="hljs-keyword">PRIMARY KEY</span>,
+    product_no <span class="hljs-type">integer</span> <span class="hljs-keyword">REFERENCES</span> products <span class="hljs-keyword">ON</span> <span class="hljs-keyword">DELETE</span> CASCADE,
+    quantity   <span class="hljs-type">integer</span>
+);
+</code></pre><p>削除を即座に拒否する例（<code>ON DELETE RESTRICT</code>）。</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE TABLE</span> orders (
+    order_id   <span class="hljs-type">integer</span> <span class="hljs-keyword">PRIMARY KEY</span>,
+    product_no <span class="hljs-type">integer</span> <span class="hljs-keyword">REFERENCES</span> products <span class="hljs-keyword">ON</span> <span class="hljs-keyword">DELETE</span> RESTRICT,
+    quantity   <span class="hljs-type">integer</span>
+);
+</code></pre><h3>4. 遅延可能制約を定義する</h3>
+<p>同一トランザクション内で参照先・参照元を任意の順序で挿入したい場合に有効です。</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE TABLE</span> orders (
+    order_id   <span class="hljs-type">integer</span> <span class="hljs-keyword">PRIMARY KEY</span>,
+    product_no <span class="hljs-type">integer</span> <span class="hljs-keyword">REFERENCES</span> products DEFERRABLE INITIALLY DEFERRED,
+    quantity   <span class="hljs-type">integer</span>
+);
+<span class="hljs-comment">-- コミット時まで外部キーチェックが行われないため、</span>
+<span class="hljs-comment">-- product 行より先に order 行を挿入しても問題なし</span>
+</code></pre><h3>5. 自己参照外部キー（ツリー構造）</h3>
+<p>同一テーブルへの参照も可能です。</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE TABLE</span> tree (
+    node_id   <span class="hljs-type">integer</span> <span class="hljs-keyword">PRIMARY KEY</span>,
+    parent_id <span class="hljs-type">integer</span> <span class="hljs-keyword">REFERENCES</span> tree,  <span class="hljs-comment">-- 自己参照</span>
+    name      text
+);
+</code></pre><h3>6. 既存テーブルへの制約追加</h3>
+<p>既存テーブルには <code>ALTER TABLE</code> で外部キーを追加できます。</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">ALTER TABLE</span> orders
+    <span class="hljs-keyword">ADD CONSTRAINT</span> fk_product
+    <span class="hljs-keyword">FOREIGN KEY</span> (product_no) <span class="hljs-keyword">REFERENCES</span> products (product_no);
+</code></pre><h2>注意点</h2>
+<h3>⚠️ 追加の読み取りコストが発生する</h3>
+<p>参照元・参照先テーブルへのすべての DML（INSERT / UPDATE / DELETE）に、参照整合性チェックのための追加読み取りが発生します。外部キー制約を追加する前に、実際のワークロードでベンチマークを実施し、パフォーマンス要件を満たすことを確認してください。</p>
+<h3>⚠️ CASCADE / SET NULL / SET DEFAULT はトランザクション行変更数制限に注意</h3>
+<p><code>CASCADE</code>・<code>SET NULL</code>・<code>SET DEFAULT</code> アクションは参照元テーブルの行を自動的に変更するため、その変更数も Aurora DSQL のトランザクション行変更数制限にカウントされます。参照元の行数が多い、あるいは予測困難な場合は <strong><code>NO ACTION</code> または <code>RESTRICT</code></strong> の使用を推奨します。</p>
+<h3>⚠️ 競合はロック待機ではなくシリアライゼーションエラー</h3>
+<p>Aurora DSQL の外部キーはロック方式ではなく楽観的並行制御を使用しています。競合が発生した場合、ロック待機は発生せず、即座にシリアライゼーションエラー（エラーコード <code>OC000</code>、SQLSTATE <code>40001</code>）が返されます。</p>
+<pre><code class="hljs">ERROR: change conflicts with another transaction (OC000) (SQLSTATE 40001)
+</code></pre><p>アプリケーションには<strong>トランザクションのリトライロジック</strong>を必ず実装してください。</p>
+<h3>⚠️ 頻繁に更新されるキー列への参照は競合を増やす</h3>
+<p>多数の参照元行が同一の参照先行を参照しており、かつその参照先のキー列が頻繁に変更される場合、コミット時競合が多発します。頻繁に変更される値は非キー列に移動することを検討し、参照される列（キー列）を安定させるよう設計してください。非キー列の変更は外部キーの競合を引き起こしません。</p>
+<h3>ℹ️ <code>DEFERRABLE</code> は外部キー制約のみ対応</h3>
+<p>Aurora DSQL において <code>DEFERRABLE</code> オプションが有効なのは外部キー制約に限られます。他の制約（<code>UNIQUE</code>、<code>CHECK</code> など）では使用できません。</p>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/08/aurora-dsql-foreign-key-constraints/">AWS What&#39;s New: Amazon Aurora DSQL now supports foreign key constraints</a></li>
+<li><a href="https://aws.amazon.com/rds/aurora/dsql/">Amazon Aurora DSQL 製品ページ</a></li>
+<li><a href="https://docs.aws.amazon.com/aurora-dsql/latest/userguide/working-with-foreign-key-constraints.html">Working with foreign key constraints – Aurora DSQL ユーザーガイド</a></li>
+<li><a href="https://docs.aws.amazon.com/aurora-dsql/latest/userguide/create-table-syntax-support.html#create-table-foreign-keys">CREATE TABLE foreign key syntax – Aurora DSQL ユーザーガイド</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/08/aurora-dsql-foreign-key-constraints/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 4件</li></ul></div>
+</article>
+<footer>
+<p>Generated by Update Unpacker · 2026/8/28</p>
+<p>この解説はAIにより自動生成されています。内容の正確性は保証されません。重要な判断を行う際は、必ず一次情報をご確認ください。</p>
+</footer>
+</body>
+</html>

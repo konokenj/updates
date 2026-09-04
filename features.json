@@ -1,5 +1,13 @@
 [
   {
+    "id": "97qFKAujDgf0",
+    "slug": "aurora-dsql-foreign-key-constraints",
+    "title": "Amazon Aurora DSQLが外部キー制約をサポート、分散SQLで参照整合性をデータベース層で宣言的に管理可能に",
+    "date": "2026-08-27",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "1qG2RpXABE8I",
     "slug": "cloudwatch-coding-agent-insights",
     "title": "Amazon CloudWatch コーディングエージェントインサイトを発表、AIコーディングツールのROIを組織全体で可視化",
