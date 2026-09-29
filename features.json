@@ -24,6 +24,14 @@
     "sourceName": "AWS What's New"
   },
   {
+    "id": "jGoQOcIJqcKP",
+    "slug": "cloudwatch-logs-managed-syslog-ingestion",
+    "title": "Amazon CloudWatch Logsがマネージドsyslogインジェスチョンをサポート、エージェント不要でネットワーク機器のログを直接収集",
+    "date": "2026-06-23",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "DxJAXdOAQSzR",
     "slug": "aws-lambda-microvms-isolated-sandbox",
     "title": "AWS Lambda MicroVMs登場 — VMレベル分離・瞬時起動・状態保持を同時に実現するサーバーレスコンピュートプリミティブ",

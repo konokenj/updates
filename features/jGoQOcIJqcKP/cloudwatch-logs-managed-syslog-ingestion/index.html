@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon CloudWatch Logsがマネージドsyslogインジェスチョンをサポート、エージェント不要でネットワーク機器のログを直接収集</title>
+<meta name="description" content="ファイアウォール、ルーター、スイッチ、LinuxサーバーからのsyslogをエージェントなしでCloudWatch Logsに直接取り込み可能に。TCP/TCP+TLS/UDP対応のVPCエンドポイント経由で送信し、RFC 5424・RFC 3164・Cisco FTD/ASA形式を自動解析。Logs Insightsで構造化フィールドを使ったクエリも可能。">
+<meta property="og:title" content="Amazon CloudWatch Logsがマネージドsyslogインジェスチョンをサポート、エージェント不要でネットワーク機器のログを直接収集">
+<meta property="og:description" content="ファイアウォール、ルーター、スイッチ、LinuxサーバーからのsyslogをエージェントなしでCloudWatch Logsに直接取り込み可能に。TCP/TCP+TLS/UDP対応のVPCエンドポイント経由で送信し、RFC 5424・RFC 3164・Cisco FTD/ASA形式を自動解析。Logs Insightsで構造化フィールドを使ったクエリも可能。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/jGoQOcIJqcKP/cloudwatch-logs-managed-syslog-ingestion/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/jGoQOcIJqcKP/cloudwatch-logs-managed-syslog-ingestion/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>Amazon CloudWatch Logsがマネージドsyslogインジェスチョンをサポート、エージェント不要でネットワーク機器のログを直接収集</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What&#039;s New</span>
+<span> · 2026/6/23</span>
+</div>
+<div class="summary"><strong>要約:</strong> ファイアウォール、ルーター、スイッチ、LinuxサーバーからのsyslogをエージェントなしでCloudWatch Logsに直接取り込み可能に。TCP/TCP+TLS/UDP対応のVPCエンドポイント経由で送信し、RFC 5424・RFC 3164・Cisco FTD/ASA形式を自動解析。Logs Insightsで構造化フィールドを使ったクエリも可能。</div>
+<h2>新機能の背景</h2>
+<p>ファイアウォール、ルーター、スイッチ、Linux サーバーなどのネットワーク機器・サーバーは、運用ログとして syslog メッセージを継続的に生成しています。これまで、これらのログを Amazon CloudWatch Logs に取り込むには、各ホストに <strong>ログ収集エージェント（CloudWatch Agent など）をインストール・管理する</strong>必要がありました。</p>
+<p>しかし、ネットワーク機器（ルーターやスイッチなど）はそもそもエージェントのインストール自体をサポートしていないケースが大半であり、分散した環境全体でエージェントを展開・維持することは大きな運用オーバーヘッドになっていました。</p>
+<p>このような課題を解消するため、<strong>エージェント不要でネットワーク機器を含む多様なインフラから直接 syslog を CloudWatch Logs に送信できる</strong>マネージドな仕組みとして、本機能が提供されました。インフラログの可視化を一元化し、ログ収集パイプラインの構築・保守コストを大幅に削減することを目的としています。</p>
+<h2>新機能の概要</h2>
+<p>Amazon CloudWatch Logs のマネージド syslog インジェスチョンは、ファイアウォール、ルーター、スイッチ、Linux サーバーなどから syslog メッセージを<strong>エージェントなしで直接 CloudWatch Logs に取り込める</strong>新機能です。</p>
+<h3>アーキテクチャ概要</h3>
+<p>syslog ソース（ネットワーク機器・サーバー）は、自アカウント内の <strong>VPC エンドポイント</strong>に対して syslog メッセージを送信します。トラフィックは <strong>AWS PrivateLink</strong> 経由でトンネリングされ、CloudWatch Logs の syslog サービスがメッセージを解析してロググループに書き込みます。</p>
+<table>
+<thead>
+<tr>
+<th>送信元の場所</th>
+<th>接続方法</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>VPC 内のリソース</td>
+<td>VPC エンドポイントに直接送信</td>
+</tr>
+<tr>
+<td>オンプレミス・ブランチオフィス・コロケーション施設</td>
+<td>VPN または AWS Direct Connect 経由で VPC エンドポイントに接続</td>
+</tr>
+</tbody></table>
+<h3>対応プロトコルとポート</h3>
+<table>
+<thead>
+<tr>
+<th>プロトコル</th>
+<th>ポート</th>
+<th>備考</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TCP + TLS</td>
+<td>6514</td>
+<td>転送中に暗号化。コンプライアンス要件に推奨。TLS 証明書は AWS マネージド（Amazon Trust Services 発行）で、クライアント側の特別な設定不要</td>
+</tr>
+<tr>
+<td>TCP（平文）</td>
+<td>1514</td>
+<td>AWS PrivateLink 経由のためネットワーク分離は確保</td>
+</tr>
+<tr>
+<td>UDP</td>
+<td>514</td>
+<td>ベストエフォート配信。メッセージロスの可能性あり</td>
+</tr>
+</tbody></table>
+<h3>対応 syslog フォーマット</h3>
+<p>CloudWatch Logs は以下の 3 つのフォーマットを<strong>自動検出・解析</strong>します。</p>
+<ul>
+<li><strong>RFC 5424</strong>（新形式）：構造化データ、ISO 8601 タイムスタンプ、アプリケーション名・プロセス ID を含む</li>
+<li><strong>RFC 3164</strong>（BSD syslog、旧来形式）：ファイアウォール・ルーター・スイッチで広く使用されるレガシー形式</li>
+<li><strong>Cisco FTD/ASA</strong>：Cisco Firepower Threat Defense および Adaptive Security Appliance 専用形式（<code>%FTD-</code> または <code>%ASA-</code> タグで識別）</li>
+</ul>
+<h3>自動抽出フィールド</h3>
+<p>メッセージはロググループに<strong>生の形式</strong>で保存されると同時に、構造化フィールドが自動的に抽出され、<strong>CloudWatch Logs Insights</strong> でのクエリが可能です。</p>
+<p><strong>RFC 5424 / RFC 3164 共通の主要フィールド：</strong></p>
+<table>
+<thead>
+<tr>
+<th>フィールド</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>facility</code> / <code>facilityCode</code></td>
+<td>ログカテゴリ名 / 数値コード（0〜23）</td>
+</tr>
+<tr>
+<td><code>severity</code> / <code>severityCode</code></td>
+<td>重要度名 / 数値コード（0〜7）</td>
+</tr>
+<tr>
+<td><code>hostname</code></td>
+<td>送信元デバイスのホスト名</td>
+</tr>
+<tr>
+<td><code>appName</code></td>
+<td>アプリケーション名</td>
+</tr>
+<tr>
+<td><code>timestamp</code></td>
+<td>タイムスタンプ（ISO 8601 形式に変換）</td>
+</tr>
+<tr>
+<td><code>message</code></td>
+<td>メッセージ本文</td>
+</tr>
+</tbody></table>
+<p><strong>RFC 5424 追加フィールド：</strong> <code>procId</code>、<code>msgId</code>、<code>structuredData</code>（構造化データ要素）</p>
+<p><strong>Cisco FTD/ASA 固有フィールド：</strong> <code>device</code>（FTD/ASA/FMC-AUDIT-LOG）、<code>deviceId</code>、<code>messageId</code>（例：<code>106023</code>）、<code>subsystem</code></p>
+<h3>利用開始方法</h3>
+<ol>
+<li>アカウント内に CloudWatch Logs syslog サービス用の <strong>VPC エンドポイント</strong>を作成する</li>
+<li>ネットワーク機器・サーバーの syslog 送信先を VPC エンドポイントのアドレスと対応ポートに設定する</li>
+<li>メッセージが自動解析され、指定したロググループに書き込まれる</li>
+<li><strong>CloudWatch Logs Insights</strong> で <code>severity</code> やホスト名などの構造化フィールドを使ってクエリ・分析する</li>
+</ol>
+<h3>利用可能リージョン</h3>
+<p>すべての商用 AWS リージョンで利用可能（ただし以下 3 リージョンを除く）：<strong>中東（UAE）</strong>、<strong>中東（バーレーン）</strong>、<strong>イスラエル（テルアビブ）</strong></p>
+<h2>使い方</h2>
+<h3>ユースケース例</h3>
+<ul>
+<li><strong>ネットワークセキュリティ調査</strong>：Cisco ASA/FTD ファイアウォールの syslog を取り込み、<code>severity</code> や <code>messageId</code> でフィルタリングしてセキュリティイベントを即時調査</li>
+<li><strong>接続性のトラブルシューティング</strong>：ルーター・スイッチのログを一元集約し、<code>hostname</code> や <code>appName</code> でデバイスを絞り込んで障害箇所を特定</li>
+<li><strong>Linux サーバーの集中監視</strong>：複数の Linux サーバーの syslog を単一のロググループに集約し、CloudWatch Logs Insights でログの横断分析</li>
+</ul>
+<h3>他の AWS サービスとの連携</h3>
+<table>
+<thead>
+<tr>
+<th>連携サービス</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>CloudWatch Logs Insights</strong></td>
+<td>抽出された構造化フィールドを使ったアドホッククエリ・可視化</td>
+</tr>
+<tr>
+<td><strong>CloudWatch Metrics</strong></td>
+<td><code>SyslogMessagesDropped</code> メトリクスによる配信失敗の監視・アラート</td>
+</tr>
+<tr>
+<td><strong>AWS PrivateLink</strong></td>
+<td>VPC エンドポイント経由のセキュアなトラフィック経路</td>
+</tr>
+<tr>
+<td><strong>AWS Direct Connect / VPN</strong></td>
+<td>オンプレミス機器からの安全な接続</td>
+</tr>
+<tr>
+<td><strong>CloudWatch Alarms</strong></td>
+<td>ドロップメッセージ数のしきい値アラートで運用チームに通知</td>
+</tr>
+</tbody></table>
+<h2>注意点</h2>
+<h4>⚠️ メッセージのロスとリカバリー不可</h4>
+<p>syslog プロトコルにはサーバーからの<strong>アプリケーション層の ACK（応答確認）が存在しません</strong>。以下の状況でメッセージが<strong>ドロップされ、リカバリーは不可能</strong>です。</p>
+<ul>
+<li>対象ロググループが削除されている</li>
+<li>リソースポリシーが正しく設定されていない</li>
+<li>アカウントの <code>PutLogEvents</code> クォータを超過している</li>
+</ul>
+<p>ドロップを検知するには、CloudWatch の <strong><code>SyslogMessagesDropped</code></strong> メトリクスを監視してください。<code>Reason</code> ディメンションでドロップ理由を確認し、適切な対処（ロググループ再作成、ポリシー修正、クォータ引き上げ申請）が可能です。</p>
+<h4>⚠️ UDP はベストエフォート</h4>
+<p>UDP はネットワーク状況によりメッセージが失われる可能性があります。<strong>確実な配信が必要な場合は TCP または TCP + TLS を使用</strong>してください。</p>
+<h4>⚠️ クォータと制限</h4>
+<table>
+<thead>
+<tr>
+<th>制限項目</th>
+<th>値</th>
+<th>備考</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>最大メッセージサイズ（TCP）</td>
+<td>64 KB</td>
+<td>標準的な syslog は通常この上限を下回る</td>
+</tr>
+<tr>
+<td>最大メッセージサイズ（UDP）</td>
+<td>8 KB</td>
+<td>標準的な syslog は通常この上限を下回る</td>
+</tr>
+<tr>
+<td>インジェスチョンスループット</td>
+<td><code>PutLogEvents</code> クォータと共有</td>
+<td>デフォルト：アカウント・リージョンあたり <strong>5,000 リクエスト/秒</strong>（Service Quotas から引き上げ申請可能）</td>
+</tr>
+</tbody></table>
+<h4>⚠️ 利用不可リージョン</h4>
+<p>現時点では <strong>中東（UAE）</strong>、<strong>中東（バーレーン）</strong>、<strong>イスラエル（テルアビブ）</strong> では利用できません。これらのリージョンを使用している場合は、代替のログ収集方法（CloudWatch Agent など）が引き続き必要です。</p>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://docs.aws.amazon.com/AmazonCloudWatch/latest/logs/CWL_Syslog.html">Amazon CloudWatch Logs syslog インジェスチョン — 公式ドキュメント</a></li>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/06/amazon-cloudwatch-syslog-ingestion/">AWS What&#39;s New: Amazon CloudWatch Logs supports managed syslog ingestion</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/06/amazon-cloudwatch-syslog-ingestion/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 1件</li></ul></div>
+</article>
+<footer>
+<p>Generated by Update Unpacker · 2026/6/23</p>
+<p>この解説はAIにより自動生成されています。内容の正確性は保証されません。重要な判断を行う際は、必ず一次情報をご確認ください。</p>
+</footer>
+</body>
+</html>
