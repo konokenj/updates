@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amazon Textractのテキスト検出モデルが刷新 — 40言語以上に対応・精度向上・多言語テーブル抽出を強化</title>
+<meta name="description" content="Amazon TextractのDetectDocumentText・AnalyzeDocument APIに新テキスト検出モデルが自動適用。対応言語を40以上に拡大（アラビア語・日中韓・キリル文字など）、長い単語や手書き文字の認識精度も向上。結合セル・傾きを含む複雑なテーブル抽出も強化。APIの変更・追加料金は一切不要。">
+<meta property="og:title" content="Amazon Textractのテキスト検出モデルが刷新 — 40言語以上に対応・精度向上・多言語テーブル抽出を強化">
+<meta property="og:description" content="Amazon TextractのDetectDocumentText・AnalyzeDocument APIに新テキスト検出モデルが自動適用。対応言語を40以上に拡大（アラビア語・日中韓・キリル文字など）、長い単語や手書き文字の認識精度も向上。結合セル・傾きを含む複雑なテーブル抽出も強化。APIの変更・追加料金は一切不要。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/X06QbnCURGgY/amazon-textract-updated-text-detection-model-multilingual/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/X06QbnCURGgY/amazon-textract-updated-text-detection-model-multilingual/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>Amazon Textractのテキスト検出モデルが刷新 — 40言語以上に対応・精度向上・多言語テーブル抽出を強化</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What&#039;s New</span>
+<span> · 2026/11/2</span>
+</div>
+<div class="summary"><strong>要約:</strong> Amazon TextractのDetectDocumentText・AnalyzeDocument APIに新テキスト検出モデルが自動適用。対応言語を40以上に拡大（アラビア語・日中韓・キリル文字など）、長い単語や手書き文字の認識精度も向上。結合セル・傾きを含む複雑なテーブル抽出も強化。APIの変更・追加料金は一切不要。</div>
+<h2>新機能の背景</h2>
+<p>Amazon Textract は OCR（光学文字認識）を超えた機械学習ベースの文書解析サービスとして、金融・医療・行政など多様な業界で活用されてきました。しかし、グローバルビジネスの拡大に伴い、<strong>多言語文書を高精度で処理したい</strong>というニーズが急速に高まっています。</p>
+<p>従来のモデルでは、対応言語が限られていたため、アラビア語・キリル文字・東アジア言語などを含む文書の処理精度に課題がありました。また、傾きや歪みのあるテーブル、結合セルを含む複雑な帳票、長い単語や手書き文字の認識精度についても改善の余地がありました。請求書・フォーム・身分証明書など<strong>ビジネスクリティカルな文書を大規模・多言語で自動処理</strong>したいユースケースでは、これらの制限がシステム導入の障壁になることがありました。</p>
+<p>こうした背景を受け、Amazon Textract はテキスト検出モデルそのものを刷新し、精度・言語カバレッジ・テーブル抽出の堅牢性を一度に底上げするアップデートを実施しました。</p>
+<h2>新機能の概要</h2>
+<p>Amazon Textract のテキスト検出モデルが更新され、以下の 3 つの領域で大きな改善が加えられました。</p>
+<h3>1. 対応言語の拡大（40以上の言語）</h3>
+<p>新モデルは以下を含む <strong>40言語以上</strong>に対応し、従来未対応だったスクリプトの信頼性が大幅に向上しました。</p>
+<table>
+<thead>
+<tr>
+<th>地域</th>
+<th>主な追加・強化言語</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>ヨーロッパ</td>
+<td>アルバニア語、ベラルーシ語、ボスニア語、ブルガリア語、クロアチア語、チェコ語、デンマーク語、オランダ語、エストニア語、フィンランド語、ハンガリー語、アイスランド語、ラトビア語、リトアニア語、ルクセンブルク語、ノルウェー語、ポーランド語、ルーマニア語、ロシア語、セルビア語（キリル・ラテン）、スロバキア語、スロベニア語、スウェーデン語、ウクライナ語</td>
+</tr>
+<tr>
+<td>中東・南アジア</td>
+<td>アラビア語、ヘブライ語、ヒンディー語</td>
+</tr>
+<tr>
+<td>東アジア</td>
+<td>中国語（簡体・繁体）、日本語、韓国語</td>
+</tr>
+<tr>
+<td>中央アジア</td>
+<td>トルクメン語、トルコ語</td>
+</tr>
+<tr>
+<td>その他</td>
+<td>英語、フランス語、ドイツ語、イタリア語、ポルトガル語、スペイン語（従来から対応）</td>
+</tr>
+</tbody></table>
+<h3>2. テキスト認識精度の向上</h3>
+<ul>
+<li><strong>長い単語の認識精度向上</strong>: メールアドレスや専門用語など文字数の多い単語をより正確に抽出できるようになりました。</li>
+<li><strong>手書き文字検出の強化</strong>: 手書き文字の認識精度が改善され、手書きを含む帳票処理の自動化が進めやすくなりました。</li>
+</ul>
+<h3>3. 多言語テーブル抽出の堅牢化</h3>
+<p>以下のような難易度の高いテーブルレイアウトへの対応が強化されました。</p>
+<ul>
+<li><strong>結合セル（Merged Cells）</strong>: セル結合を含む複雑なテーブル構造を正確に解釈</li>
+<li><strong>傾き・回転テーブル（Skewed / Rotated Tables）</strong>: スキャン品質が低い文書や斜めに撮影された文書にも対応</li>
+<li><strong>欠損・破損テーブル（Partial / Corrupted Tables）</strong>: 一部が欠けたテーブルや破損した文書でも安定した抽出が可能</li>
+</ul>
+<h3>4. 適用 API と後方互換性</h3>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>詳細</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>対象 API</td>
+<td><code>DetectDocumentText</code>（同期テキスト検出） / <code>AnalyzeDocument</code>（同期文書解析）</td>
+</tr>
+<tr>
+<td>変更要否</td>
+<td><strong>不要</strong> — API リクエスト仕様・レスポンススキーマに変更なし</td>
+</tr>
+<tr>
+<td>適用方式</td>
+<td><strong>自動</strong> — 既存アプリケーションはコード変更なしで新モデルを即時利用可能</td>
+</tr>
+<tr>
+<td>提供リージョン</td>
+<td>Amazon Textract が利用可能なすべての AWS リージョン</td>
+</tr>
+<tr>
+<td>追加料金</td>
+<td>なし</td>
+</tr>
+</tbody></table>
+<h2>使い方</h2>
+<p>今回のアップデートは<strong>既存ユーザーには自動適用</strong>されるため、新たな設定作業は不要です。</p>
+<h3>既存ユーザー：ゼロ対応で即時恩恵</h3>
+<p>現在 <code>DetectDocumentText</code> または <code>AnalyzeDocument</code> API を呼び出しているアプリケーションは、コードを一切変更せず、そのままの API 呼び出しで新モデルによる改善済みの結果を受け取ることができます。</p>
+<h3>新規ユーザー：利用開始手順</h3>
+<ol>
+<li>AWS アカウントを作成し、IAM ユーザーに <code>AmazonTextractFullAccess</code> ポリシーを付与します。</li>
+<li>処理対象ドキュメント（JPEG / PNG / PDF / TIFF）を Amazon S3 にアップロードするか、バイト配列として直接渡します。</li>
+<li>用途に応じて API を呼び出します。</li>
+</ol>
+<pre><code class="hljs language-python"><span class="hljs-keyword">import</span> boto3
+
+client = boto3.client(<span class="hljs-string">&#x27;textract&#x27;</span>, region_name=<span class="hljs-string">&#x27;us-east-1&#x27;</span>)
+
+<span class="hljs-comment"># 同期テキスト検出（最大 10 MB）</span>
+response = client.detect_document_text(
+    Document={<span class="hljs-string">&#x27;S3Object&#x27;</span>: {<span class="hljs-string">&#x27;Bucket&#x27;</span>: <span class="hljs-string">&#x27;my-bucket&#x27;</span>, <span class="hljs-string">&#x27;Name&#x27;</span>: <span class="hljs-string">&#x27;invoice.pdf&#x27;</span>}}
+)
+
+<span class="hljs-comment"># テーブル・フォームも含む文書解析</span>
+response = client.analyze_document(
+    Document={<span class="hljs-string">&#x27;S3Object&#x27;</span>: {<span class="hljs-string">&#x27;Bucket&#x27;</span>: <span class="hljs-string">&#x27;my-bucket&#x27;</span>, <span class="hljs-string">&#x27;Name&#x27;</span>: <span class="hljs-string">&#x27;form.pdf&#x27;</span>}},
+    FeatureTypes=[<span class="hljs-string">&#x27;TABLES&#x27;</span>, <span class="hljs-string">&#x27;FORMS&#x27;</span>]
+)
+</code></pre><p>大容量・大量処理の場合は非同期 API（<code>StartDocumentTextDetection</code> / <code>StartDocumentAnalysis</code>）を使用してください。</p>
+<h3>料金</h3>
+<p>追加料金は発生しません。既存の Textract 料金体系がそのまま適用されます。参考として、<code>DetectDocumentText</code> API は US West (Oregon) リージョンで 100 万ページまで <strong>1 ページあたり $0.0015</strong>（100,000 ページ処理で $150）です。</p>
+<h3>他の AWS サービスとの連携例</h3>
+<table>
+<thead>
+<tr>
+<th>連携サービス</th>
+<th>活用シナリオ</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Amazon S3</strong></td>
+<td>処理対象ドキュメントの格納・イベント駆動トリガー</td>
+</tr>
+<tr>
+<td><strong>AWS Lambda</strong></td>
+<td>S3 へのアップロードをトリガーに Textract を自動実行するサーバーレスパイプライン</td>
+</tr>
+<tr>
+<td><strong>Amazon Comprehend</strong></td>
+<td>Textract で抽出したテキストをさらに感情分析・エンティティ抽出・言語検出に活用</td>
+</tr>
+<tr>
+<td><strong>Amazon A2I（Augmented AI）</strong></td>
+<td>信頼スコアが低い抽出結果のみ人間レビューにルーティング</td>
+</tr>
+<tr>
+<td><strong>Amazon OpenSearch Service</strong></td>
+<td>抽出テキストをインデックス化して全文検索システムを構築</td>
+</tr>
+<tr>
+<td><strong>AWS Step Functions</strong></td>
+<td>文書受信 → OCR → データ検証 → 格納をオーケストレーション</td>
+</tr>
+</tbody></table>
+<h2>注意点</h2>
+<p>新モデルへの移行はシームレスですが、以下の点を事前に把握しておくことを推奨します。</p>
+<ul>
+<li><p><strong>モデルのオプトアウト不可</strong>: 更新は自動適用であり、旧モデルに戻す手段は提供されていません。本番環境への影響が懸念される場合は、事前にステージング環境で主要な文書タイプの出力を確認しておくことを推奨します。精度向上による結果の変化が、下流の処理ロジック（信頼スコアの閾値や特定フィールドの正規表現マッチングなど）に影響しないか検証してください。</p>
+</li>
+<li><p><strong>フォーム抽出（キーバリューペア）の言語制限は継続</strong>: <code>AnalyzeDocument</code> の <code>FORMS</code> 機能（キーバリューペア・チェックボックス抽出）は引き続き <strong>英語・スペイン語・イタリア語・ポルトガル語・フランス語・ドイツ語</strong> の 6 言語のみ対応です。今回の多言語対応は主に<strong>テキスト検出（OCR）レイヤー</strong>の改善であり、フォーム解析機能の多言語化ではありません。</p>
+</li>
+<li><p><strong>手書き認識の多言語対応範囲</strong>: 手書き文字の認識精度向上はアナウンスされていますが、すべての新対応言語で均一に適用されるわけではありません。非ラテン文字の手書き認識については公式ドキュメントや実測での確認を推奨します。</p>
+</li>
+<li><p><strong>同期 API のファイルサイズ制限</strong>: <code>DetectDocumentText</code> および <code>AnalyzeDocument</code>（同期）は最大 <strong>10 MB</strong> のドキュメントサイズ制限があります。それを超える場合は <code>StartDocumentTextDetection</code> / <code>StartDocumentAnalysis</code>（非同期）を使用してください。</p>
+</li>
+<li><p><strong>対応ファイル形式</strong>: JPEG、PNG、PDF、TIFF のみ対応です。その他の形式（Word、Excel など）は事前に変換が必要です。</p>
+</li>
+</ul>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/11/textract-text-detection-model/">Announcing an updated text detection model for Amazon Textract — AWS What&#39;s New</a></li>
+<li><a href="https://aws.amazon.com/textract/">Amazon Textract 製品ページ</a></li>
+<li><a href="https://docs.aws.amazon.com/textract/">Amazon Textract Developer Guide</a></li>
+<li><a href="https://aws.amazon.com/textract/pricing/">Amazon Textract 料金ページ</a></li>
+<li><a href="https://aws.amazon.com/textract/faqs/">Amazon Textract FAQ</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/11/textract-text-detection-model/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 2件</li></ul></div>
+</article>
+<footer>
+<p>Generated by Update Unpacker · 2026/11/3</p>
+<p>この解説はAIにより自動生成されています。内容の正確性は保証されません。重要な判断を行う際は、必ず一次情報をご確認ください。</p>
+</footer>
+</body>
+</html>

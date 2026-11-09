@@ -8,6 +8,14 @@
     "sourceName": "AWS What's New"
   },
   {
+    "id": "X06QbnCURGgY",
+    "slug": "amazon-textract-updated-text-detection-model-multilingual",
+    "title": "Amazon Textractのテキスト検出モデルが刷新 — 40言語以上に対応・精度向上・多言語テーブル抽出を強化",
+    "date": "2026-11-02",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "97qFKAujDgf0",
     "slug": "aurora-dsql-foreign-key-constraints",
     "title": "Amazon Aurora DSQLが外部キー制約をサポート、分散SQLで参照整合性をデータベース層で宣言的に管理可能に",
