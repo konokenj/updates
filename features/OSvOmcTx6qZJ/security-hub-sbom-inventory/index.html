@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AWS Security Hub がSBOMインベントリを提供開始 — EC2・ECR・Lambdaのソフトウェア構成を組織全体で一元管理</title>
+<meta name="description" content="Amazon InspectorのSBOMスキャン結果をSecurity Hubが自動集約し、EC2・ECRコンテナイメージ・Lambda関数のインストール済みパッケージを組織横断で継続的に可視化。追加設定不要でSecurity Hub Essentialsプランに含まれ、CVE影響範囲の即時特定やコンプライアンス証跡の作成に活用できる。">
+<meta property="og:title" content="AWS Security Hub がSBOMインベントリを提供開始 — EC2・ECR・Lambdaのソフトウェア構成を組織全体で一元管理">
+<meta property="og:description" content="Amazon InspectorのSBOMスキャン結果をSecurity Hubが自動集約し、EC2・ECRコンテナイメージ・Lambda関数のインストール済みパッケージを組織横断で継続的に可視化。追加設定不要でSecurity Hub Essentialsプランに含まれ、CVE影響範囲の即時特定やコンプライアンス証跡の作成に活用できる。">
+<meta property="og:type" content="article">
+<meta property="og:image" content="https://konokenj.github.io/updates/features/OSvOmcTx6qZJ/security-hub-sbom-inventory/og.png">
+<meta property="og:url" content="https://konokenj.github.io/updates/features/OSvOmcTx6qZJ/security-hub-sbom-inventory/">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+:root{--bg:#fff;--fg:#24292e;--muted:#6a737d;--border:#e1e4e8;--link:#0366d6;--code-bg:#f6f8fa}
+@media(prefers-color-scheme:dark){:root{--bg:#0d1117;--fg:#c9d1d9;--muted:#8b949e;--border:#30363d;--link:#58a6ff;--code-bg:#161b22}}
+*{box-sizing:border-box}body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif;line-height:1.6;color:var(--fg);background:var(--bg);max-width:800px;margin:0 auto;padding:2rem 1rem}
+a{color:var(--link);text-decoration:none}a:hover{text-decoration:underline}
+h1,h2,h3{border-bottom:1px solid var(--border);padding-bottom:.3em;margin-top:1.5em}
+pre{background:var(--code-bg);padding:1rem;border-radius:6px;overflow-x:auto}
+code{font-family:SFMono-Regular,Consolas,"Liberation Mono",Menlo,monospace;font-size:.875em}
+:not(pre)>code{background:var(--code-bg);padding:.2em .4em;border-radius:3px}
+blockquote{border-left:4px solid var(--border);margin:0;padding-left:1rem;color:var(--muted)}
+img{max-width:100%}table{border-collapse:collapse;width:100%}th,td{border:1px solid var(--border);padding:.5rem}
+.meta{color:var(--muted);font-size:.875rem;margin-bottom:1.5rem}
+.badge{display:inline-block;padding:.125rem .5rem;border-radius:1rem;font-size:.75rem;font-weight:500;margin-right:.5rem}
+.badge-feat{background:#ddf4ff;color:#0969da}.badge-fix{background:#fff8c5;color:#9a6700}
+.badge-docs{background:#f3e8ff;color:#8250df}.badge-perf{background:#dafbe1;color:#1a7f37}
+.badge-breaking{background:#ffebe9;color:#cf222e}.badge-alpha{background:#fff8c5;color:#9a6700}
+.summary{background:var(--code-bg);padding:1rem;border-radius:6px;margin-bottom:1.5rem;font-size:.95rem}
+.related{background:var(--code-bg);padding:1rem;border-radius:6px;margin-top:2rem}
+.related h3{border:none;margin-top:0;padding-bottom:0}
+.related ul{margin:0.5rem 0 0 0;padding-left:1.5rem}
+footer{margin-top:3rem;padding-top:1rem;border-top:1px solid var(--border);color:var(--muted);font-size:.875rem}
+
+.hljs{color:#24292e;background:transparent}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#d73a49}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#6f42c1}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#005cc5}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#032f62}
+.hljs-built_in,.hljs-symbol{color:#e36209}
+.hljs-code,.hljs-comment,.hljs-formula{color:#6a737d}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#22863a}
+.hljs-subst{color:#24292e}
+.hljs-section{color:#005cc5;font-weight:700}
+.hljs-bullet{color:#735c0f}
+.hljs-emphasis{font-style:italic}
+.hljs-strong{font-weight:700}
+.hljs-addition{color:#22863a;background-color:#f0fff4}
+.hljs-deletion{color:#b31d28;background-color:#ffeef0}
+@media(prefers-color-scheme:dark){
+.hljs{color:#c9d1d9}
+.hljs-doctag,.hljs-keyword,.hljs-meta .hljs-keyword,.hljs-template-tag,.hljs-template-variable,.hljs-type,.hljs-variable.language_{color:#ff7b72}
+.hljs-title,.hljs-title.class_,.hljs-title.class_.inherited__,.hljs-title.function_{color:#d2a8ff}
+.hljs-attr,.hljs-attribute,.hljs-literal,.hljs-meta,.hljs-number,.hljs-operator,.hljs-selector-attr,.hljs-selector-class,.hljs-selector-id,.hljs-variable{color:#79c0ff}
+.hljs-meta .hljs-string,.hljs-regexp,.hljs-string{color:#a5d6ff}
+.hljs-built_in,.hljs-symbol{color:#ffa657}
+.hljs-code,.hljs-comment,.hljs-formula{color:#8b949e}
+.hljs-name,.hljs-quote,.hljs-selector-pseudo,.hljs-selector-tag{color:#7ee787}
+.hljs-subst{color:#c9d1d9}
+.hljs-section{color:#79c0ff;font-weight:700}
+.hljs-bullet{color:#f2cc60}
+.hljs-addition{color:#aff5b4;background-color:#033a16}
+.hljs-deletion{color:#ffdcd7;background-color:#67060c}
+}
+</style>
+</head>
+<body>
+<article>
+<h1>AWS Security Hub がSBOMインベントリを提供開始 — EC2・ECR・Lambdaのソフトウェア構成を組織全体で一元管理</h1>
+<div class="meta">
+
+
+<span class="badge badge-feat">FEAT</span>
+<span>AWS What&#039;s New</span>
+<span> · 2026/11/6</span>
+</div>
+<div class="summary"><strong>要約:</strong> Amazon InspectorのSBOMスキャン結果をSecurity Hubが自動集約し、EC2・ECRコンテナイメージ・Lambda関数のインストール済みパッケージを組織横断で継続的に可視化。追加設定不要でSecurity Hub Essentialsプランに含まれ、CVE影響範囲の即時特定やコンプライアンス証跡の作成に活用できる。</div>
+<h2>新機能の背景</h2>
+<p>近年、ソフトウェアサプライチェーン攻撃（SolarWinds、Log4Shell など）が相次いで発生したことで、「自社のシステムにどのソフトウェアが入っているか」を正確に把握するニーズが急増しました。これに応える形で <strong>SBOM（Software Bill of Materials：ソフトウェア部品表）</strong> が注目を集めており、米国政府の大統領令 14028 をはじめ、金融・医療・製造など多くの業界規制がその作成・管理を求め始めています。</p>
+<p>しかし、大規模なクラウド環境では EC2 インスタンス・コンテナイメージ・Lambda 関数が常に増減しており、SBOM を手動でエクスポート・突き合わせるだけでも膨大な運用コストがかかります。また、新たな脆弱性（CVE）が公開された際に「どのリソースが影響を受けるか」を迅速に特定できなければ、インシデント対応が後手に回ります。</p>
+<p>これまで Amazon Inspector は各リソースの SBOM を生成していましたが、それはリソース単位の情報にとどまり、組織全体を横断した一元的なビューは提供されていませんでした。AWS Security Hub が SBOM インベントリ機能を追加したことで、この課題が解消されます。</p>
+<h2>新機能の概要</h2>
+<p>AWS Security Hub の SBOM インベントリは、Amazon Inspector がコンピューティングリソースをスキャンするたびに生成する SBOM を自動収集し、組織全体の最新ソフトウェア台帳として一元管理する機能です。</p>
+<h3>対象リソース</h3>
+<table>
+<thead>
+<tr>
+<th>リソース種別</th>
+<th>例</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>仮想マシン</td>
+<td>Amazon EC2 インスタンス、Microsoft Azure 仮想マシン（※）</td>
+</tr>
+<tr>
+<td>コンテナイメージ</td>
+<td>Amazon ECR コンテナイメージ、Azure Container Registry（※）</td>
+</tr>
+<tr>
+<td>サーバーレス関数</td>
+<td>AWS Lambda 関数</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>※ Azure リソースは Security Hub と Azure を接続している場合に対象となります。</p>
+</blockquote>
+<h3>SBOM ページの主な情報</h3>
+<ul>
+<li><strong>パッケージテーブル</strong> — パッケージ名・バージョン・パッケージ種別（rpm、npm、pip など）・インストール済みリソース数を一覧表示。同一パッケージは何台にインストールされていても <strong>1 行</strong> にまとめて表示され、「Resources」列の件数で展開範囲を把握できます。</li>
+<li><strong>サマリーチャート</strong> — &quot;Packages by type&quot;（種別ごとのインストール数分布）と &quot;Most common packages&quot;（最も広く使われているパッケージ Top N）の 2 種類のグラフ。チャートの値をクリックするとテーブルが絞り込まれます。</li>
+<li><strong>フィルター・グループ化</strong> — パッケージ名・バージョン・パッケージ種別・アカウント・リージョン・リソース種別・クラウドプロバイダーで絞り込み可能。よく使うフィルターセットを保存して再利用できます。</li>
+<li><strong>リソース詳細の「Installed software」タブ</strong> — 特定リソースに移動すると、そのリソースにインストールされているすべてのパッケージを確認でき、ファインディングのトリアージ時にリソースの役割・重要度判断に活用できます。</li>
+<li><strong>Security Hub API</strong> — コンソール操作だけでなく API 経由でもインベントリをクエリできます。</li>
+</ul>
+<h3>管理者アカウントとメンバーアカウントの違い</h3>
+<table>
+<thead>
+<tr>
+<th>アカウント種別</th>
+<th>表示範囲</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>管理者アカウント</td>
+<td>組織内の有効化済みアカウントすべてのソフトウェア</td>
+</tr>
+<tr>
+<td>メンバーアカウント</td>
+<td>自アカウントのリソースのみ</td>
+</tr>
+</tbody></table>
+<h3>料金・提供リージョン</h3>
+<ul>
+<li><strong>Security Hub Essentials プランに追加費用なしで含まれています。</strong> Inspector と Security Hub CSPM の費用が Essentials プランとして統合されたリソースベースの料金体系に一本化されており、SBOM インベントリはその中に組み込まれています。</li>
+<li>Security Hub が利用可能なすべての AWS リージョンで利用できます。</li>
+</ul>
+<h2>使い方</h2>
+<h4>前提条件の確認</h4>
+<ol>
+<li>対象アカウント・リージョンで <strong>AWS Security Hub</strong> が有効になっていること。</li>
+<li>インベントリに含めたいリソース種別（EC2・ECR・Lambda）に対して <strong>Amazon Inspector</strong> が有効になっていること（Inspector が有効でないリソース種別はインベントリに表示されません）。</li>
+</ol>
+<blockquote>
+<p>Inspector を有効化していない場合、SBOM ページには「Amazon Inspector is not enabled」メッセージと「Enable Inspector」ボタンが表示されます。このボタンから Security Hub の設定画面に遷移して Inspector を有効化できます。</p>
+</blockquote>
+<h4>SBOM ページへのアクセス手順</h4>
+<ol>
+<li><a href="https://console.aws.amazon.com/securityhub/">Security Hub コンソール</a> を開く。</li>
+<li>左ナビゲーションの <strong>Inventory</strong> → <strong>SBOM</strong> を選択。</li>
+</ol>
+<h4>主要なユースケースと操作例</h4>
+<table>
+<thead>
+<tr>
+<th>ユースケース</th>
+<th>操作</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>新規 CVE 影響範囲の特定</strong></td>
+<td>脆弱なパッケージ名でフィルターし、「Resources」列でインストール済みリソースを一覧化</td>
+</tr>
+<tr>
+<td><strong>特定リソースのトリアージ支援</strong></td>
+<td>リソース詳細 → 「Installed software」タブで全パッケージを確認し、リソースの役割・重要度を判断</td>
+</tr>
+<tr>
+<td><strong>コンプライアンス証跡の作成</strong></td>
+<td>API でインベントリを定期取得し、SIEM・ITSM・監査レポートに連携</td>
+</tr>
+<tr>
+<td><strong>組織横断の棚卸し</strong></td>
+<td>アカウント・リージョン単位でグループ化し、ソフトウェア分布をマルチアカウントで比較</td>
+</tr>
+</tbody></table>
+<h4>他の AWS サービスとの連携可能性</h4>
+<ul>
+<li><strong>Amazon Inspector</strong> — SBOM の生成元。Inspector のスキャン対象を広げるほどインベントリが充実します。</li>
+<li><strong>AWS Organizations</strong> — 管理者アカウントで組織全体のインベントリを一元表示できます。</li>
+<li><strong>Security Hub API / Amazon EventBridge</strong> — インベントリ変更イベントを下流の SIEM（Amazon Security Lake, Splunk など）や SOAR ツールに連携し、自動修復ワークフローを構築できます。</li>
+<li><strong>AI Inventory 機能</strong>（2026年7月リリース）— Inspector の SBOM 解析を活用して EC2・ECR 上の AI モデルや推論エンドポイントも自動検出します。SBOM インベントリと相補的に利用できます。</li>
+</ul>
+<h2>注意点</h2>
+<ol>
+<li><p><strong>Inspector の有効化範囲に依存する</strong> — SBOM インベントリは「Amazon Inspector がスキャンしているリソース種別」のみを反映します。例えば Inspector で EC2 のみ有効にしている場合、Lambda や ECR はインベントリに表示されません。組織全体の可視性を確保するには、対象リソース種別すべてで Inspector を有効にする必要があります。</p>
+</li>
+<li><p><strong>反映まで数時間かかる場合がある</strong> — Inspector が新しい SBOM を生成した後、Security Hub の SBOM ページに反映されるまで <strong>数時間</strong>かかることがあります。リアルタイム性が求められる用途では、Inspector の直接出力も合わせて参照してください。</p>
+</li>
+<li><p><strong>リソース削除時の自動クリーンアップ</strong> — インスタンスが終了・削除されたり Inspector のカバレッジ外になったりすると、そのリソースのソフトウェアはインベントリから自動的に削除されます。定期的なスナップショット保持が必要な場合は API で定期エクスポートする運用が必要です。</p>
+</li>
+<li><p><strong>アカウントの表示権限に注意</strong> — メンバーアカウントでは自アカウントのリソースしか参照できません。組織全体を俯瞰したい場合は、Organizations の管理者（委任管理者）アカウントから Security Hub を操作してください。</p>
+</li>
+<li><p><strong>Azure リソースは追加設定が必要</strong> — Azure 仮想マシンや Azure Container Registry のリソースをインベントリに含めるには、Security Hub と Microsoft Azure を接続する追加設定が必要です。設定なしでは AWS リソースのみが対象です。</p>
+</li>
+<li><p><strong>Security Hub Essentials プランの対象外サービスは別途課金</strong> — Lambda コードスキャン（高度なコード解析）は Essentials に含まれず「Additional capabilities」として別途課金されます。通常の Lambda 関数スキャン（パッケージ一覧取得）は Essentials 内で提供されます。</p>
+</li>
+</ol>
+<hr>
+<p><strong>補完情報の出典</strong></p>
+<ul>
+<li><a href="https://docs.aws.amazon.com/securityhub/latest/userguide/securityhub-v2-sbom.html">AWS Security Hub User Guide — Software bill of materials</a></li>
+<li><a href="https://docs.aws.amazon.com/help-panel/securityhub/latest/helppanel/securityhub-advanced-sbom.html">AWS Security Hub ヘルプパネル — SBOM</a></li>
+<li><a href="https://aws.amazon.com/about-aws/whats-new/2026/11/security-hub-sbom-inventory/">AWS What&#39;s New — AWS Security Hub now provides an SBOM inventory for your compute resources</a></li>
+<li><a href="https://aws.amazon.com/security-hub/pricing/">AWS Security Hub Pricing</a></li>
+<li><a href="https://aws.amazon.com/security-hub/faqs/">AWS Security Hub FAQ</a></li>
+<li><a href="https://docs.aws.amazon.com/securityhub/latest/userguide/security-hub-usage-page.html">AWS Security Hub — Monitoring usage and costs</a></li>
+</ul>
+
+<div class="related"><h3>関連情報</h3><ul><li><a href="https://aws.amazon.com/about-aws/whats-new/2026/11/security-hub-sbom-inventory/" target="_blank" rel="noopener">元のページを開く</a></li><li>参照したコンテンツ: 2件</li></ul></div>
+</article>
+<footer>
+<p>Generated by Update Unpacker · 2026/11/6</p>
+<p>この解説はAIにより自動生成されています。内容の正確性は保証されません。重要な判断を行う際は、必ず一次情報をご確認ください。</p>
+</footer>
+</body>
+</html>

@@ -1,5 +1,13 @@
 [
   {
+    "id": "OSvOmcTx6qZJ",
+    "slug": "security-hub-sbom-inventory",
+    "title": "AWS Security Hub がSBOMインベントリを提供開始 — EC2・ECR・Lambdaのソフトウェア構成を組織全体で一元管理",
+    "date": "2026-11-06",
+    "type": "FEAT",
+    "sourceName": "AWS What's New"
+  },
+  {
     "id": "97qFKAujDgf0",
     "slug": "aurora-dsql-foreign-key-constraints",
     "title": "Amazon Aurora DSQLが外部キー制約をサポート、分散SQLで参照整合性をデータベース層で宣言的に管理可能に",
